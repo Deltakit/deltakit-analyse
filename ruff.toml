@@ -1,4 +1,4 @@
-# Linting configuration for dkit-analyse.
+# Linting configuration for deltakit-analyse.
 #
 # General and format configurations are repository-wide for the moment.
 # Repository-wide Ruff configuration.
@@ -40,7 +40,7 @@ exclude = [
 ]
 
 # Only include source code and tests.
-include = ["src/dkit_analyse/**/*.py", "tests/**/*.py"]
+include = ["src/deltakit_analyse/**/*.py", "tests/**/*.py"]
 
 # Same as Black.
 line-length = 88

@@ -3,11 +3,11 @@ requires = ["setuptools>=80"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dkit-analyse"
+name = "deltakit-analyse"
 version = "0.1.0"
-description = "Dkit (component dkit-analyse)"
+description = "Deltakit (component deltakit-analyse)"
 readme = "README.md"
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.11,<3.16"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 
@@ -22,9 +22,10 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Quantum Computing",
@@ -34,11 +35,11 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/riverlane/dkit-analyse"
-Source = "https://github.com/riverlane/dkit-analyse"
+Homepage = "https://github.com/riverlane/deltakit-analyse"
+Source = "https://github.com/riverlane/deltakit-analyse"
 Documentation = "https://deltakit.riverlane.com/"
-Issues = "https://github.com/riverlane/dkit-analyse/issues"
-Changelog = "https://github.com/riverlane/dkit-analyse/releases"
+Issues = "https://github.com/riverlane/deltakit-analyse/issues"
+Changelog = "https://github.com/riverlane/deltakit-analyse/releases"
 
 
 [dependency-groups]
@@ -124,7 +125,7 @@ extend-exclude = [
 ]
 
 [tool.deptry]
-known_first_party = ["dkit_analyse"]
+known_first_party = ["deltakit_analyse"]
 ignore = ["DEP003"]
 extend_exclude = ["tools/"]
 
