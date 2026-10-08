@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+src/dkit_analyse/__init__.py
+src/dkit_analyse.egg-info/PKG-INFO
+src/dkit_analyse.egg-info/SOURCES.txt
+src/dkit_analyse.egg-info/dependency_links.txt
+src/dkit_analyse.egg-info/requires.txt
+src/dkit_analyse.egg-info/top_level.txt
+tests/test_dummy.py
