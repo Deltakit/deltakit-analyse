@@ -10,12 +10,12 @@ from scipy.optimize import curve_fit
 from uncertainties import correlated_values, ufloat, unumpy
 from uncertainties.umath import exp as uexp
 
-from deltakit_explorer.analysis._binomial_fit import (
+from deltakit_analyse._binomial_fit import (
     DEFAULT_MAX_LIKELIHOOD_FACTOR,
     fit_binomial_batch,
     fit_leppr_and_spam,
 )
-from deltakit_explorer.analysis._estimate import Estimate
+from deltakit_analyse._estimate import Estimate
 
 
 def leppr_from_single_point(lep: float, lep_stddev: float, rounds: int) -> Estimate:

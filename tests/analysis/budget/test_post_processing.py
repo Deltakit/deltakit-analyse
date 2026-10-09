@@ -6,7 +6,7 @@ import numpy.typing as npt
 import pandas as pd
 import pytest
 
-from deltakit_explorer.analysis.error_budget._post_processing import (
+from deltakit_analyse.error_budget._post_processing import (
     _compute_logical_error_rate_per_round_from_results,
     _filter_non_close_noise_parameters,
     compute_lambda_interval_from_results,

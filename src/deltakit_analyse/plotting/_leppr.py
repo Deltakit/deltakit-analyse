@@ -7,8 +7,8 @@ from deltakit_core.plotting.colours import RIVERLANE_PLOT_COLOURS
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from deltakit_explorer.plotting._utils import get_figure_and_axes
-from deltakit_explorer.plotting.results import (
+from deltakit_analyse.plotting._utils import get_figure_and_axes
+from deltakit_analyse.plotting.results import (
     LogicalErrorProbabilityPerRoundResult as LEPPRResult,
 )
 
@@ -25,9 +25,9 @@ def plot_leppr(
     LEPPR stands for logical error probability per round. This specialised
     plotter owns only the LEPPR-specific rendering logic. It expects a
     ready-to-plot
-    :class:`~deltakit_explorer.plotting.results.LogicalErrorProbabilityPerRoundResult`.
+    :class:`~deltakit_analyse.plotting.results.LogicalErrorProbabilityPerRoundResult`.
     Higher-level data preparation, such as interpolation from raw LEPPR data,
-    should be handled by :func:`deltakit_explorer.plotting.plot` before dispatch.
+    should be handled by :func:`deltakit_analyse.plotting.plot` before dispatch.
 
     Args:
         leppr_result: Interpolated logical error probability per round result
@@ -46,7 +46,7 @@ def plot_leppr(
 
         Plotting an interpolated logical error probability per round result::
 
-            from deltakit_explorer.plotting import interpolate_leppr, plot_leppr
+            from deltakit_analyse.plotting import interpolate_leppr, plot_leppr
 
             leppr_result = interpolate_leppr(leppr_data)
             fig, ax = plot_leppr(leppr_result)

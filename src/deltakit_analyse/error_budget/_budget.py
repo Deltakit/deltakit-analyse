@@ -8,12 +8,9 @@ import numpy as np
 import numpy.typing as npt
 from deltakit_circuit._circuit import Circuit
 
-from deltakit_explorer.analysis.error_budget._gradient import inverse_lambda_gradient_at
-from deltakit_explorer.analysis.error_budget._memory import (
-    MemoryGenerator,
-    get_rotated_surface_code_memory_circuit,
-)
-from deltakit_explorer.analysis.error_budget._parameters import (
+from deltakit_analyse.error_budget._gradient import inverse_lambda_gradient_at
+from deltakit_analyse.error_budget._memory import MemoryGenerator
+from deltakit_analyse.error_budget._parameters import (
     FittingParameters,
     SamplingParameters,
 )
@@ -71,10 +68,9 @@ def get_error_budget(
     noise_parameters: npt.NDArray[np.floating] | Sequence[float],
     num_rounds_by_distances: Mapping[int, Sequence[int]],
     noise_parameters_exploration_bounds: list[tuple[float, float]],
+    memory_generator: MemoryGenerator | Mapping[int, Mapping[int, Circuit]],
     fitting_parameters: FittingParameters = FittingParameters(),
     sampling_parameters: SamplingParameters = SamplingParameters(),
-    memory_generator: MemoryGenerator
-    | Mapping[int, Mapping[int, Circuit]] = get_rotated_surface_code_memory_circuit,
 ) -> ErrorBudgetResult:
     """Compute the error budget of the provided ``noise_model``.
 
@@ -122,9 +118,9 @@ def get_error_budget(
         point,
         num_rounds_by_distances,
         noise_parameters_exploration_bounds,
+        memory_generator,
         fitting_parameters,
         sampling_parameters,
-        memory_generator,
     )
     return ErrorBudgetResult.from_gradient(
         gradient, gradient_stddev, np.asarray(noise_parameters)

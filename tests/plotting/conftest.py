@@ -4,8 +4,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from deltakit_explorer.analysis import LambdaData
-from deltakit_explorer.analysis import (
+from deltakit_analyse import LambdaData
+from deltakit_analyse import (
     LogicalErrorProbabilityPerRoundData as LEPPRData,
 )
 

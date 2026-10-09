@@ -5,7 +5,7 @@ from math import sqrt
 import numpy as np
 import pytest
 
-from deltakit_explorer.analysis import (
+from deltakit_analyse import (
     calculate_lep_and_lep_stddev,
     compute_logical_error_per_round,
 )
@@ -267,7 +267,7 @@ class TestComputeLeppScalarInputs:
     def test_scalar_lep_round_trip(self) -> None:
         lep, lep_stddev = calculate_lep_and_lep_stddev(456, 10_000)
         res = compute_logical_error_per_round([10], lep, lep_stddev)
-        expected = compute_logical_error_per_round([10], [lep], [lep_stddev])
+        expected = compute_logical_error_per_round([10], lep, lep_stddev)
         np.testing.assert_allclose(res.leppr, expected.leppr)
         np.testing.assert_allclose(res.leppr_stddev, expected.leppr_stddev)
 
