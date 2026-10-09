@@ -1,4 +1,4 @@
-# Dkit-analyse
+# Deltakit-analyse
 
 [![PyPI][pypi-badge]][pypi-link]
 [![Python versions][python-badge]][pypi-link]
@@ -27,16 +27,16 @@
 [spec0-link]: https://scientific-python.org/specs/spec-0000/
 
 [issues-badge]: https://img.shields.io/github/issues/Deltakit/deltakit?logo=github
-[issues-link]: https://github.com/riverlane/dkit-analyse/issues
+[issues-link]: https://github.com/deltakit/deltakit-analyse/issues
 
 [discussions-badge]: https://img.shields.io/badge/discussions-join-blue?logo=github
-[discussions-link]: https://github.com/riverlane/dkit-analyse/discussions
+[discussions-link]: https://github.com/deltakit/deltakit-analyse/discussions
 
-Dkit allows you to create and run quantum error correction (QEC) experiments with features
+deltakit allows you to create and run quantum error correction (QEC) experiments with features
 including circuit generation, simulation, decoding and results analysis.
 
-Whether you're a seasoned QEC researcher or just starting out, Dkit supports you
+Whether you're a seasoned QEC researcher or just starting out, deltakit supports you
 in exploring new ways to implement QEC logic all the way to running complex
 QEC circuits on QPU hardware.
 
-This package, `dkit-analyse`, is a component package of `dkit`; please see [dkit](https://github.com/riverlane/dkit) for more information.
+This package, `deltakit-analyse`, is a component package of `deltakit`; please see [deltakit](https://github.com/deltakit/deltakit) for more information.
