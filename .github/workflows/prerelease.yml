@@ -1,4 +1,4 @@
-name: Build, test, and publish development wheels on Riverlane PyPI
+name: Build, test, and publish development wheels on PyPI
 
 on:
   workflow_dispatch:
@@ -19,8 +19,10 @@ jobs:
           fetch-depth: 0
       - name: Install uv
         uses: astral-sh/setup-uv@v7
+
       - name: Build deltakit-analyse wheel
         run: uv build --no-sources -o ./dist
+
       - name: Upload wheels artefacts
         uses: actions/upload-artifact@v7
         with:
@@ -41,30 +43,23 @@ jobs:
           - windows-latest
           - macos-latest
     steps:
-      - name: Make dist dir
-        run: mkdir dist
       - name: Recover deltakit distribution files
         uses: actions/download-artifact@v8
         with:
           pattern: ${{ env.pkg_name }}
           path: ./dist/
           merge-multiple: true
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: false
-      - name: Test installs in Unix systems
-        if: matrix.os != 'windows-latest'
+
+      - name: Test installs
+        shell: bash
         run: |
           uv venv --python ${{ matrix.python-version }}
-          uv pip install --pre dist/*.whl --find-links ./dist/
-          uv run python -c "import deltakit_analyse"
-      - name: Test installs on Windows OS
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          uv venv --python ${{ matrix.python-version }}
-          uv pip install --pre (Get-ChildItem dist/*.whl).FullName --find-links ./dist/
+          uv pip install --pre dist/*.whl
           uv run python -c "import deltakit_analyse"
 
   test-sdist:
@@ -72,22 +67,22 @@ jobs:
     needs: [build-test-wheels]
     runs-on: ubuntu-latest
     steps:
-      - name: Make dist dir
-        run: mkdir dist
       - name: Recover deltakit distribution files
         uses: actions/download-artifact@v8
         with:
           pattern: ${{ env.pkg_name }}
           path: ./dist/
           merge-multiple: true
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: false
+
       - name: Test install and imports
         run: |
           uv venv --python 3.11
-          uv pip install --pre dist/*.tar.gz --find-links ./dist/
+          uv pip install --pre dist/*.tar.gz
           uv run python -c "import deltakit_analyse"
 
   set-pre-version:
@@ -96,22 +91,20 @@ jobs:
     needs: [test-wheel, test-sdist]
     steps:
       - uses: actions/checkout@v6
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
+
       - name: Install release dependencies
-        run: uv sync --python 3.13 --group release
+        run: uv sync --python 3.15 --group release
+
       - name: Set prerelease version with short commit hash.
         run: |
           git config --global --add safe.directory /__w/deltakit_analyse/deltakit_analyse
           COMMIT_HASH=$(git rev-parse --short HEAD)
           SECS_SINCE_EPOCH=$(date +%s)
           uv run --no-sync python3 -m tools.set_pre_version -t "$SECS_SINCE_EPOCH" -c "$COMMIT_HASH"
-      - name: Commit current state of project
-        run: |
-          git config user.name "riv-dev-bot"
-          git config user.email "devbot@riverlane.com"
-          git add -A
-          git commit -m "chore: set prerelease version"
+
       - name: Upload updated project
         uses: actions/upload-artifact@v7
         with:
@@ -128,12 +121,15 @@ jobs:
         with:
           name: prerelease-proj
           path: .
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: false
+
       - name: Build deltakit subpackages wheel
         run: uv build --no-sources -o ./dist
+
       - name: Upload wheels artefacts
         uses: actions/upload-artifact@v7
         with:
@@ -142,29 +138,20 @@ jobs:
           retention-days: 1
 
   publish:
-    name: Publish Python distribution to Riverlane PyPI
+    name: Publish Python distribution to PyPI
     needs: [build-wheels-for-publishing]
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/${{ env.pkg_name }}
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
-      - name: Make dist dir
-        run: mkdir ./dist
-      - name: Recover deltakit distribution files
+      - name: Recover deltakit-analyse distribution files
         uses: actions/download-artifact@v8
         with:
           pattern: publish-${{ env.pkg_name }}
           path: ./dist/
           merge-multiple: true
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
-      - name: Install twine tool
-        run: python3 -m pip install twine
-      - name: Upload packages to private PyPI
-        run: |
-          twine upload \
-            --repository-url https://riv-pypi.azurewebsites.net/home \
-            -u '${{ secrets.CI_RUNNER_USERNAME }}' \
-            -p '${{ secrets.CI_RUNNER_PASSWORD }}' \
-            dist/*
-        continue-on-error: true
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

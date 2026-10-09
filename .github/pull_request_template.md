@@ -36,8 +36,8 @@ Anything that doesn't fit into a category above.
 This PR will be **squash-merged**, draft the final one-line commit message here.
 
 ```
-fix(compile)!: Description of a breaking change fixing an issue on dkit-compile
+fix!: Description of a breaking change fixing an issue on deltakit-analyse
 ```
 
 The allowed types (words that can replace `fix`) and scopes (words that can replace `compile`) are
-listed in https://github.com/riverlane/dkit-analyse/blob/main/.github/workflows/semantic_pull_requests.yaml.
+listed in https://github.com/deltakit/deltakit-analyse/blob/main/.github/workflows/semantic_pull_requests.yaml.

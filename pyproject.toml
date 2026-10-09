@@ -164,6 +164,3 @@ require-return-section-when-returning-nothing = false
 # The raise checks are oddly restrictive - forcing us to document exceptions in the function
 # body and nothing more.
 skip-checking-raises = true
-# For the moment, we have a baseline of documentation format errors. Eventually, this will
-# be removed.
-baseline = ".pydoclint_baseline.txt"

@@ -14,17 +14,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
-      - name: Grant access to private repo
-        uses: riverlane/devops-resources/.github/actions/private-repo-access@dev
-        with:
-          username: ${{ secrets.CI_RUNNER_USERNAME }}
-          password: ${{ secrets.CI_RUNNER_PASSWORD }}
+
       - name: Build deltakit-analyse wheel
-        env:
-          NPM_TOKEN: ${{ secrets.RIV_DEV_BOT_PAT }}
         run: uv build --no-sources .
+
       - name: Upload deltakit-analyse wheel artefact
         uses: actions/upload-artifact@v7
         with:
@@ -49,27 +45,27 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
-      - name: Grant access to private repo
-        uses: riverlane/devops-resources/.github/actions/private-repo-access@dev
-        with:
-          username: ${{ secrets.CI_RUNNER_USERNAME }}
-          password: ${{ secrets.CI_RUNNER_PASSWORD }}
+        
       - name: Download deltakit-analyse wheel
         uses: actions/download-artifact@v8
         with:
           name: deltakit-analyse-wheel
           path: ./dist
+
       - name: Setup and sync venv for testing deltakit
         run: |
           uv sync --python ${{ matrix.python-version }} --resolution ${{matrix.dependency-resolution}} --group test --find-links ./dist/
           uv pip install ./dist/*.whl
+
       - name: Test deltakit-analyse
         env:
           COVERAGE_ARGS: ${{ env.ENABLE_COVERAGE == 'true' && '--cov deltakit_analyse --cov-config pyproject.toml --cov-report xml:coverage.xml' || '' }}
         run: |
           uv run --python ${{ matrix.python-version }} --no-sync pytest $COVERAGE_ARGS tests/
+
       # Re-enable coverage report when proper tests are in place.
       # - name: Printing coverage report as a message
       #   if: ${{ env.ENABLE_COVERAGE == 'true' && env.PR_FROM_FORK == 'false' && env.PR_FROM_DEPENDABOT == 'false' }}
@@ -84,52 +80,48 @@ jobs:
       #     link_missing_lines: true
       #     link_missing_lines_source_dir: ''
       #     only_changed_files: true
+
   # Perform static check for deltakit-analyse.
   static-checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
-      - name: Grant access to private repo
-        uses: riverlane/devops-resources/.github/actions/private-repo-access@dev
-        with:
-          username: ${{ secrets.CI_RUNNER_USERNAME }}
-          password: ${{ secrets.CI_RUNNER_PASSWORD }}
+
       - name: Setup venv
         run: uv sync --group=lint --group=security
+
       - name: Check for typos
         run: uv run --no-sync typos
         if: ${{ always() }}
+
       - name: Run `ruff` syntax checker
         run: uv run --no-sync ruff check
         if: ${{ always() }}
+
       - name: Run `ruff` formatting
         run: uv run --no-sync ruff format --check
         if: ${{ always() }}
+
       - name: Run `pydoclint` documentation formatting
         run: uv run --no-sync pydoclint .
         if: ${{ always() }}
+
       - name: Run `mypy` type checker
         run: uv run --no-sync mypy
         if: ${{ always() }}
+
       - name: Run `deptry` for dependency hygiene
         run: uv run --no-sync deptry .
         if: ${{ always() }}
+
       - name: Run `bandit` for code vulnerabilities
         run: uv run --no-sync bandit .
         if: ${{ always() }}
+        
       - name: Run `pip_audit` to check dependencies for known vulnerabilities
-        # Ignore CVE-2025-53000 as it only affects `nbconvert` on Windows.
-        # `nbconvert` is only used for documentation building on Linux.
-        # Remove when https://github.com/jupyter/nbconvert/issues/2258 is fixed.
-        run: |
-          uv pip install --upgrade pip
-          uv run --no-sync pip-audit --ignore-vuln CVE-2025-53000
+        run: uv run --no-sync pip-audit
         if: ${{ always() }}
-        # There is currently an error because pip-audit is not able to find
-        # deltakit-compile on PyPI. Until we upload an empty version of
-        # deltakit-compile on it, ignore errors because pip-audit does not have any way
-        # of ignoring a dependency.
-        continue-on-error: true
