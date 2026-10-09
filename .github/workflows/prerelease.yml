@@ -48,6 +48,7 @@ jobs:
         with:
           pattern: ${{ env.pkg_name }}
           path: ./dist/
+          merge-multiple: true
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
@@ -71,6 +72,7 @@ jobs:
         with:
           pattern: ${{ env.pkg_name }}
           path: ./dist/
+          merge-multiple: true
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
@@ -101,7 +103,7 @@ jobs:
           git config --global --add safe.directory /__w/deltakit_analyse/deltakit_analyse
           COMMIT_HASH=$(git rev-parse --short HEAD)
           SECS_SINCE_EPOCH=$(date +%s)
-          uv run --no-sync python3 -m tools.set_pre_version -t "$SECS_SINCE_EPOCH"
+          uv run --no-sync python3 -m tools.set_pre_version -t "$SECS_SINCE_EPOCH" -c "$COMMIT_HASH"
 
       - name: Upload updated project
         uses: actions/upload-artifact@v7
@@ -150,5 +152,6 @@ jobs:
         with:
           pattern: publish-${{ env.pkg_name }}
           path: ./dist/
+          merge-multiple: true
       - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

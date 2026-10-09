@@ -77,6 +77,7 @@ jobs:
         with:
           pattern: ${{ env.pkg_name }}
           path: ./dist/
+          merge-multiple: true
 
       - name: Test installs
         shell: bash 
@@ -101,6 +102,7 @@ jobs:
         with:
           pattern: ${{ env.pkg_name }}
           path: ./dist/
+          merge-multiple: true
 
       - name: Test install and imports
         run: |
@@ -118,10 +120,11 @@ jobs:
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
-      - name: Recover deltakit-circuit distribution files
+      - name: Recover deltakit-analyse distribution files
         uses: actions/download-artifact@v8
         with:
           pattern: ${{ env.pkg_name }}
           path: ./dist/
+          merge-multiple: true
       - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
