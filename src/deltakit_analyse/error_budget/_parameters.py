@@ -14,8 +14,9 @@ class FittingParameters:
     num_points_per_parameters: int = 10
     """Number of different values to try for each noise parameter.
 
-    Corresponds to the number of points that will be used to fit a degree ``fitting_degree``
-    polynomial. As such, should be greater than ``fitting_degree + 1``.
+    Corresponds to the number of points that will be used to fit a degree
+    ``fitting_degree`` polynomial. As such, should be greater than
+    ``fitting_degree + 1``.
     """
     discretisation_strategy: DiscretisationStrategy = DiscretisationStrategy.LOGARITHMIC
     """A strategy to generate points that will be used to compute 1 / Λ on different
@@ -36,8 +37,8 @@ class FittingParameters:
         if self.num_points_per_parameters + 1 < self.fitting_degree + 2:
             msg = (
                 f"Estimation of the standard deviation requires at least "
-                f"fitting_degree + 2 = {self.fitting_degree + 2} discretisation points, "
-                f"but only {self.num_points_per_parameters} + 1 are provided. Please "
+                f"fitting_degree + 2 = {self.fitting_degree + 2} discretisation points,"
+                f" but only {self.num_points_per_parameters} + 1 are provided. Please "
                 f"increase num_points_per_parameters to at least "
                 f"{self.fitting_degree + 1}."
             )
@@ -65,7 +66,8 @@ class SamplingParameters:
     """Target relative standard error under which a sampling task is considered precise
     enough and can be stopped before ``max_shots`` sampling tasks have returned."""
     lep_computation_min_fails: int = 10
-    """Minimum number of failures that should be witnessed before stopping a sampling task.
+    """Minimum number of failures that should be witnessed before stopping a sampling
+    task.
 
     A sampling task may stop with less failures, for example if ``max_shots`` shots have
     been performed."""

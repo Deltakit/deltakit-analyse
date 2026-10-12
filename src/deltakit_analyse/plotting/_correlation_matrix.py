@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from collections.abc import Collection, Iterable, Sequence
 from itertools import chain
+from typing import Final
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -91,10 +92,11 @@ def correlation_matrix(
     return plt
 
 
+_DEFAULT_TRANSFORM_MATRIX: Final = np.array([[1, 1], [-1, 1]]) * (0.5**0.5)
+
+
 def _rotate_defect_rate_points(
-    detector_coords: dict,
-    defect_rates: dict,
-    transform_mat=np.array([[1, 1], [-1, 1]]) * (0.5**0.5),
+    detector_coords: dict, defect_rates: dict, transform_mat=_DEFAULT_TRANSFORM_MATRIX
 ) -> dict:
     # transform det coordinates to get upright plot
     for d_id, coord in detector_coords.items():

@@ -87,6 +87,14 @@ select = [
 ignore = [
     # Having an explicit argument to open() for the open mode is nice.
     "UP015",
+    # Complaining about functions having too many arguments. This is a temporary ignore
+    # until the API of these functions is changed to allow less parameters, if this is
+    # deemed better.
+    "PLR0913",
+    "PLR0917",
+    # Magic values should eventually be replaced by constants, but this is post-poned
+    # for the moment.
+    "PLR2004",
 ]
 
 # Specific per-file ignores
@@ -107,6 +115,9 @@ ignore = [
     "RUF043",
     # Tests don't need copyright notices
     "CPY001",
+    # Tests might be heavily parameterised and that is fine.
+    "PLR0913",
+    "PLR0917",
 ]
 
 # Some test names/arguments are not strictly using camel_case as they contain some

@@ -38,7 +38,7 @@ def _filter_non_close_noise_parameters(
         ``noise_parameters``.
     """
     ret = data
-    for name, param in zip(noise_parameter_names, noise_parameters):
+    for name, param in zip(noise_parameter_names, noise_parameters, strict=True):
         ret = ret[np.isclose(ret[f"noise_{name}"], param)]
     return ret
 
@@ -171,7 +171,8 @@ def _extract_counts_from_results(
     if not np.all(non_zeros_mask):
         warnings.warn(
             "Found at least one sampling task with 0 fails. It will be ignored for "
-            "logical error probability computation."
+            "logical error probability computation.",
+            stacklevel=2,
         )
     return (
         np.asarray(num_rounds)[non_zeros_mask],

@@ -116,21 +116,23 @@ class LambdaData:
         - d is the code distance
 
     Attributes:
-        lambda_: Error suppression factor. The underscore avoids shadowing Python keyword ``lambda``.
+        lambda_: Error suppression factor. The underscore avoids shadowing Python
+            keyword ``lambda``.
         lambda_std: Error suppression factor standard deviation.
         lambda0: Error suppression prefactor.
         lambda0_std: Error suppression prefactor standard deviation.
         distances: An array of code distances.
         leppr: An array for leppr computed for all code distances.
-        leppr_std: An array for leppr standard deviation computed for all code distances.
+        leppr_std: An array for leppr standard deviation computed for all code
+            distances.
         lambda_interval: Asymmetric confidence interval ``(low, best, high)`` for Λ.
             Only set by :func:`calculate_lambda_asymmetric`, otherwise None.
         lambda0_interval: Asymmetric confidence interval ``(low, best, high)`` for Λ₀,
             or None.
 
     Note:
-        This class maintains the invariant that the lengths for 'distances', 'leppr' and 'leppr_std'
-        match.
+        This class maintains the invariant that the lengths for ``distances``, ``leppr``
+        and ``leppr_std`` match.
     """
 
     lambda_: float
@@ -229,8 +231,9 @@ def _lambda_shifted_fit(
     # Prepare log data for linear fit.
     log_leppr = np.log(leppr)
     log_leppr_std = leppr_std / leppr
-    # Fitting with the old 'numpy.polyfit' API provides standard deviations and a covariance matrix over the
-    # new 'numpy.polynomial.Polyfit' API. See for instance the transition guide:
+    # Fitting with the old 'numpy.polyfit' API provides standard deviations and a
+    # covariance matrix over the new 'numpy.polynomial.Polyfit' API. See for instance
+    # the transition guide:
     # https://numpy.org/doc/stable/reference/routines.polynomials.html
     (slope, offset), cov = np.polyfit(
         distances,
@@ -303,8 +306,9 @@ def _lambda_lin_fit(
     # Prepare log data for linear fit.
     log_leppr = np.log(leppr)
     log_leppr_std = leppr_std / leppr
-    # Fitting with the old 'numpy.polyfit' API provides standard deviations and a covariance matrix over the
-    # new 'numpy.polynomial.Polyfit' API. See for instance the transition guide:
+    # Fitting with the old 'numpy.polyfit' API provides standard deviations and a
+    # covariance matrix over the new 'numpy.polynomial.Polyfit' API. See for instance
+    # the transition guide:
     # https://numpy.org/doc/stable/reference/routines.polynomials.html
     (slope, offset), cov = np.polyfit(
         (distances + 1) / 2,
@@ -423,15 +427,18 @@ def calculate_lambda_and_lambda_stddev(
 
     Args:
         distances: An array for code distances as leppr data points.
-        leppr: An array for leppr computed for all distances. Must be of same size as 'distances'.
-        leppr_std: An array for leppr standard deviation for each distance. Must be of same size as 'distances'.
+        leppr: An array for leppr computed for all distances. Must be of same size as
+            ``distances``.
+        leppr_std: An array for leppr standard deviation for each distance. Must be of
+            same size as ``distances``.
         method: Method used to fit the data. The default is "lin".
 
     Returns:
-        LambdaData: Container for Λ, Λ₀, their standard deviations, and the input data.
+        Container for Λ, Λ₀, their standard deviations, and the input data.
 
     Raises:
-        ValueError: When input data do not match sizes or when duplicated data is provided.
+        ValueError: When input data do not match sizes or when duplicated data is
+        provided.
 
     Notes:
         When Λ is very close to 1 (``abs(Λ - 1) < 1e-7``) and ``method == "curve"``,
@@ -473,6 +480,7 @@ def calculate_lambda_and_lambda_stddev(
         warnings.warn(
             "Lambda estimation is unreliable at low code distances and low values of "
             "lambda. Please use distance 5 as a minimum.",
+            stacklevel=2,
         )
     return lambda_fit
 

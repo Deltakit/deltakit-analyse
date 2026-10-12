@@ -95,7 +95,7 @@ def inverse_lambda_at(
     noise_parameters: npt.NDArray[np.floating] | Sequence[float],
     num_rounds_by_distances: Mapping[int, Sequence[int]],
     memory_generator: MemoryGenerator | Mapping[int, Mapping[int, Circuit]],
-    sampling_parameters: SamplingParameters = SamplingParameters(),
+    sampling_parameters: SamplingParameters | None = None,
 ) -> ConfidenceInterval:
     """Compute 1 / Λ.
 
@@ -114,8 +114,8 @@ def inverse_lambda_at(
         num_rounds_by_distances: a mapping from each code distance that should be tested
             to the number of rounds that should be sampled in order to estimate the
             logical error-probability per round, to ultimately get 1 / Λ.
-        sampling_parameters: additional parameters relating to the sampling tasks used to
-            estimate 1 / Λ indirectly.
+        sampling_parameters: additional parameters relating to the sampling tasks used
+            to estimate 1 / Λ indirectly.
         memory_generator: a callable that can generate a memory experiment. The
             resulting circuit will go through the provided ``noise_model`` for different
             values of the noise parameters.
@@ -126,6 +126,8 @@ def inverse_lambda_at(
         :func:`inverse_lambda_interval_at` profiles the likelihood for genuinely
         asymmetric bounds.
     """
+    if sampling_parameters is None:
+        sampling_parameters = SamplingParameters()
     point, noise_parameter_names, report = _run_lambda_engine(
         noise_model,
         noise_parameters,
@@ -149,7 +151,7 @@ def inverse_lambda_interval_at(
     noise_parameters: npt.NDArray[np.floating] | Sequence[float],
     num_rounds_by_distances: Mapping[int, Sequence[int]],
     memory_generator: MemoryGenerator | Mapping[int, Mapping[int, Circuit]],
-    sampling_parameters: SamplingParameters = SamplingParameters(),
+    sampling_parameters: SamplingParameters | None = None,
 ) -> ConfidenceInterval:
     """Compute 1 / Λ with an asymmetric confidence interval.
 
@@ -171,6 +173,8 @@ def inverse_lambda_interval_at(
     Returns:
         The estimate of 1 / Λ together with its lower and upper bounds.
     """
+    if sampling_parameters is None:
+        sampling_parameters = SamplingParameters()
     point, noise_parameter_names, report = _run_lambda_engine(
         noise_model,
         noise_parameters,

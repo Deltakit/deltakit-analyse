@@ -47,7 +47,10 @@ class ConfidenceInterval:
 
     def __post_init__(self) -> None:
         if not (self.low <= self.best <= self.high):
-            msg = f"Expected low <= best <= high, got {self.low}, {self.best}, {self.high}."
+            msg = (
+                "Expected low <= best <= high, got "
+                f"{self.low}, {self.best}, {self.high}."
+            )
             raise ValueError(msg)
 
 
@@ -102,7 +105,8 @@ def fit_binomial(
             be before it is excluded from the interval. Must be at least 1.
 
     Returns:
-        A :class:`ConfidenceInterval` with the best estimate and its low and high bounds.
+        A :class:`ConfidenceInterval` with the best estimate and its low and high
+        bounds.
 
     Raises:
         ValueError: If the inputs are out of range.

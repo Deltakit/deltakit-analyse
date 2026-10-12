@@ -135,7 +135,7 @@ def compute_logical_error_per_round(
     estimated values of logical error probabilities for several round durations.
 
     Args:
-        num_rounds (npt.NDArray[numpy.int_] | Sequence[int]):
+        num_rounds:
             a sequence of integers representing the number of rounds used to get the
             corresponding results in ``logical_error_probabilities`` and
             ``logical_error_probabilities_stddev``. Any value below 1 (``< 1``) is
@@ -152,21 +152,21 @@ def compute_logical_error_per_round(
             to provide data for rounds such that the estimated logical error probability
             for the number of rounds ``max(num_rounds)`` is approximately ``0.4``. This
             ``0.4`` value has been set to reduce fitting errors.
-        logical_error_probabilities (npt.NDArray[numpy.floating] | Sequence[float]):
+        logical_error_probabilities:
             logical error probabilities computed for each of the provided
             ``num_rounds``. Should be the same length as ``num_rounds``.
-        logical_error_probabilities_stddev (npt.NDArray[numpy.floating] | Sequence[float]):
+        logical_error_probabilities_stddev:
             standard deviation of the logical error probabilities provided in
             ``logical_error_probabilities``. Should be the same length as
             ``num_rounds``.
-        force_include_single_round (bool):
+        force_include_single_round:
             if ``True``, data obtained from 1-round experiment will be used in the
             computation if provided in ``num_rounds``. Default to ``False`` which
             results in 1-round data being ignored due to boundary effects that affect
             the final estimation. See https://arxiv.org/pdf/2207.06431.pdf (p.21).
 
     Returns:
-        LEPPRResults: detailed results of the computation.
+        Detailed results of the computation.
 
     Examples:
         Calculating per-round logical error probability and its standard deviation
@@ -210,7 +210,8 @@ def compute_logical_error_per_round(
     while num_rounds.size > 0 and num_rounds[0] <= 0:
         warnings.warn(
             f"Found an invalid number of rounds: {num_rounds[0]}. Number of rounds "
-            "should be >= 1."
+            "should be >= 1.",
+            stacklevel=2,
         )
         num_rounds = num_rounds[1:]
         logical_error_probabilities = logical_error_probabilities[1:]
@@ -228,7 +229,8 @@ def compute_logical_error_per_round(
     if np.any(invalid_lep_indices):
         warnings.warn(
             "Found at least one invalid (i.e., > 0.5) logical error probability. "
-            "Ignoring all the provided logical error probabilities above 0.5."
+            "Ignoring all the provided logical error probabilities above 0.5.",
+            stacklevel=2,
         )
         valid_lep_indices = np.logical_not(invalid_lep_indices)
         num_rounds = num_rounds[valid_lep_indices]
@@ -251,7 +253,8 @@ def compute_logical_error_per_round(
     if logical_error_probabilities.size == 1:
         warnings.warn(
             "Only one valid data-point provided for logical error probability per "
-            "round. Continuing computation assuming that SPAM error is negligible."
+            "round. Continuing computation assuming that SPAM error is negligible.",
+            stacklevel=2,
         )
         rounds = num_rounds[0]
         lep = float(logical_error_probabilities[0])
@@ -276,7 +279,8 @@ def compute_logical_error_per_round(
             "The maximum estimated logical error probability "
             f"({max_logical_error_probability}) is below 0.2. The returned estimation "
             "might be better if you add data with more rounds such that the maximum "
-            "estimated logical error probability is closer to 0.4."
+            "estimated logical error probability is closer to 0.4.",
+            stacklevel=2,
         )
 
     fidelities = 1 - 2 * logical_error_probabilities
@@ -306,7 +310,8 @@ def compute_logical_error_per_round(
         # as a first estimate.
         p0=(0, 0),
         # Both slope and offset are used to recover a probability with the expression
-        # p = (1 - numpy.exp(value)) / 2. Because a probability needs to be in [0, 1], we
+        # p = (1 - numpy.exp(value)) / 2. Because a probability needs to be
+        # in [0, 1], we
         # have that value <= numpy.log(1).
         # Note: even though the below bounds are valid, setting bounds changes the
         # default optimisation method from "lm" to "trf". There is at least one
@@ -324,8 +329,9 @@ def compute_logical_error_per_round(
     if abs(r2) < 0.98:
         warnings.warn(
             f"Got a R2 value of {r2} < 0.98. Estimation might be imprecise. Increasing "
-            "the number of shots or re-performing the computation might help in removing "
-            "this warning."
+            "the number of shots or re-performing the computation might help "
+            "in removing this warning.",
+            stacklevel=2,
         )
 
     # Following https://arxiv.org/pdf/2505.09684v1 (Methods - Extracting logical error
@@ -372,25 +378,24 @@ def simulate_different_round_numbers_for_lep_per_round_estimation(
     backward and replaces that last value with the first one under that limit.
 
     Args:
-        simulator (Callable[[int], tuple[int, int]]):
-            a callable that returns a tuple ``(num_fails, num_shots)`` from a number of
-            rounds given as input.
-        initial_round_number (int): initial value for the geometric series that will be
-            used to generate the number of rounds.
-        next_round_number_func (Callable[[int], int]): function used to compute the
-            next round number that should be tested. Default to a linear scaling up to
-            500 rounds and then an exponential scaling. The initial linear scaling is to
-            avoid the nearby points generated at the beginning of the exponential
-            scaling whereas the final exponential scaling is to avoid spending too much
-            time if the noise is really low.
-        maximum_round_number (int): if set, this function will stop once the next
+        simulator: a callable that returns a tuple ``(num_fails, num_shots)`` from a
+            number of rounds given as input.
+        initial_round_number: initial value for the geometric series that will be used
+            to generate the number of rounds.
+        next_round_number_func: function used to compute the next round number that
+            should be tested. Default to a linear scaling up to 500 rounds and then an
+            exponential scaling. The initial linear scaling is to avoid the nearby
+            points generated at the beginning of the exponential scaling whereas the
+            final exponential scaling is to avoid spending too much time if the noise is
+            really low.
+        maximum_round_number: if set, this function will stop once the next
             number of rounds (computed with ``next_round_number_func``) is above that
             threshold. If not set, only the other stopping criterions apply.
-        heuristic_logical_error_lower_bound (float): minimum target logical error
+        heuristic_logical_error_lower_bound: minimum target logical error
             probability for the final round. Might not be verified by the return of this
             function if ``maximum_round_number`` is set and reached before that minimum
             threshold.
-        heuristic_logical_error_upper_bound (float): maximal target logical error
+        heuristic_logical_error_upper_bound: maximal target logical error
             probability for the final round. Should be set sufficiently below ``0.5``
             such that the uncertainties (mostly due to finite sampling) on the computed
             logical error probability (LEP) are low enough to not introduce a plateau in
@@ -398,20 +403,19 @@ def simulate_different_round_numbers_for_lep_per_round_estimation(
             ``0.45`` seems to check that.
 
     Returns:
-        tuple[npt.NDArray[numpy.int_], npt.NDArray[numpy.int_], npt.NDArray[numpy.int_]]:
-            A tuple consisting of
-            - the different number of rounds corresponding to the two other entries,
-            - the number of failed shots for the corresponding number of rounds,
-            - the total number of shots for the corresponding number of rounds.
+        A tuple consisting of
+        - the different number of rounds corresponding to the two other entries,
+        - the number of failed shots for the corresponding number of rounds,
+        - the total number of shots for the corresponding number of rounds.
 
     Examples:
         Calculating per-round logical error probability and its standard deviation
         given number of fails, and number of shots for several rounds::
 
-            def perfect_simulator(num_rounds: int) -> tuple[int, int]:
-                error_per_round: float = 0.001
-                total_error: float = (1 - error_per_round) ** num_rounds
-                num_shots: int = 100_000
+            def perfect_simulator(num_rounds):
+                error_per_round = 0.001
+                total_error = (1 - error_per_round) ** num_rounds
+                num_shots = 100_000
                 num_fails = total_error * num_shots
                 return num_fails, num_shots
 
@@ -575,7 +579,10 @@ def calculate_lep_and_lep_stddev(
         msg = "Input data do not match lengths."
         raise ValueError(msg)
     if np.any(fails <= 0) or np.any(shots <= 0):
-        msg = "Both `fail` and `shots` must be strictly positive entries to calculate the logical error probability."
+        msg = (
+            "Both `fail` and `shots` must be strictly positive entries to calculate "
+            "the logical error probability."
+        )
         raise ValueError(msg)
     # Wald approximation for binomial LEP; asymmetric intervals are tracked separately
     # (see issue #134).
