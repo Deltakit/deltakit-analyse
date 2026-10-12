@@ -157,7 +157,7 @@ def test_c_optimal_produces_wellconditioned_designs(a: float, b: float) -> None:
     # Rescale to [-1, 1] (same as the objective does internally) and check
     # the conditioning is comfortably below the threshold.
     u = 2 * (pts - pts.min()) / (pts.max() - pts.min()) - 1
-    X = np.vander(u, 4, increasing=True)
+    X = np.vander(u, 4, increasing=True)  # ruff: ignore[non-lowercase-variable-in-function]
     assert np.linalg.cond(X.T @ X) < 1e10
 
 

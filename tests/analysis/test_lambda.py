@@ -19,21 +19,21 @@ class TestCalculateLambda:
         leppr = [1.992e-04, 4.314e-05, 7.556e-06]
         leppr_std = [1.2e-05, 9.3e-06, 3.9e-06]
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=r"Input data do not match lengths\."):
             calculate_lambda_and_lambda_stddev(
                 distances=[5, 7],
                 leppr=leppr,
                 leppr_std=leppr_std,
             )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=r"Input data do not match lengths\."):
             calculate_lambda_and_lambda_stddev(
                 distances=distances,
                 leppr=[1.992e-04, 4.314e-05],
                 leppr_std=leppr_std,
             )
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=r"Input data do not match lengths\."):
             calculate_lambda_and_lambda_stddev(
                 distances=distances,
                 leppr=leppr,
