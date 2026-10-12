@@ -208,13 +208,13 @@ def get_decoding_result(
         num_rounds_by_distances: a mapping from each code distance that should be tested
             to the number of rounds that should be sampled in order to estimate the
             logical error-probability per round, to ultimately get 1 / Λ.
+        memory_generator: a callable that can generate a memory experiment. The
+            resulting circuit will go through the provided ``noise_model`` for different
+            values of the noise parameters.
         fitting_parameters: additional parameters relating to how the gradient is
             estimated.
         sampling_parameters: additional parameters relating to the sampling tasks used
             to estimate 1 / Λ indirectly.
-        memory_generator: a callable that can generate a memory experiment. The
-            resulting circuit will go through the provided ``noise_model`` for different
-            values of the noise parameters.
 
     Returns:
         A pandas DataFrame containing the statistics resulting from sampling the
@@ -352,13 +352,13 @@ def inverse_lambda_gradient_at(
             upper) bound is above ``100 / max_shots`` to ensure enough fails are
             observed with ``max_shots`` shots (resp. below ``1 / 2`` to ensure that we
             can compute the logical error probability per round).
+        memory_generator: a callable that can generate a memory experiment. The
+            resulting circuit will go through the provided ``noise_model`` for different
+            values of the noise parameters.
         fitting_parameters: additional parameters relating to how the gradient is
             estimated.
         sampling_parameters: additional parameters relating to the sampling tasks used
             to estimate 1 / Λ indirectly.
-        memory_generator: a callable that can generate a memory experiment. The
-            resulting circuit will go through the provided ``noise_model`` for different
-            values of the noise parameters.
 
 
     Returns:

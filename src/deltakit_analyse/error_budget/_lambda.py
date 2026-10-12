@@ -114,11 +114,11 @@ def inverse_lambda_at(
         num_rounds_by_distances: a mapping from each code distance that should be tested
             to the number of rounds that should be sampled in order to estimate the
             logical error-probability per round, to ultimately get 1 / Λ.
-        sampling_parameters: additional parameters relating to the sampling tasks used
-            to estimate 1 / Λ indirectly.
         memory_generator: a callable that can generate a memory experiment. The
             resulting circuit will go through the provided ``noise_model`` for different
             values of the noise parameters.
+        sampling_parameters: additional parameters relating to the sampling tasks used
+            to estimate 1 / Λ indirectly.
 
     Returns:
         A :class:`ConfidenceInterval` for 1 / Λ. Its bounds are the symmetric
@@ -167,8 +167,8 @@ def inverse_lambda_interval_at(
             representing the point at which 1 / Λ should be computed.
         num_rounds_by_distances: a mapping from each code distance to the number
             of rounds used to estimate the logical error probability per round.
-        sampling_parameters: additional parameters relating to the sampling tasks.
         memory_generator: a callable that generates a memory experiment.
+        sampling_parameters: additional parameters relating to the sampling tasks.
 
     Returns:
         The estimate of 1 / Λ together with its lower and upper bounds.

@@ -400,30 +400,30 @@ def calculate_lambda_and_lambda_stddev(
 ) -> LambdaData:
     """Estimate the error suppression factor (Λ) and its standard deviation.
 
-    This function fits the scaling of the logical error probability per round
-    (leppr) and propagates its standard deviation (leppr_std) through the
-    fitting method as a function of code distance.
+    This function fits the scaling of the logical error probability per round (leppr)
+    and propagates its standard deviation (leppr_std) through the fitting method as a
+    function of code distance.
 
-    It extracts the error suppression factor Λ and the prefactor Λ₀,
-    along with their standard deviations.
+    It extracts the error suppression factor Λ and the prefactor Λ₀, along with their
+    standard deviations.
 
-    The leppr can be approximated as ``lep / num_rounds`` for small error rates,
-    or computed together with its standard deviation more accurately using
+    The leppr can be approximated as ``lep / num_rounds`` for small error rates, or
+    computed together with its standard deviation more accurately using
     :func:`compute_logical_error_per_round`.
 
-    By supplying leppr values at increasing code distances, this routine
-    estimates how quickly logical errors are suppressed as the code grows.
-    Note that Λ is a heuristic quantity: estimates may be unreliable near
-    threshold and for small distances. In such cases, a warning is emitted.
+    By supplying leppr values at increasing code distances, this routine estimates how
+    quickly logical errors are suppressed as the code grows. Note that Λ is a heuristic
+    quantity: estimates may be unreliable near threshold and for small distances. In
+    such cases, a warning is emitted.
 
     All three fitting methods show remarkable numerical agreement.
-    LambdaFitMethod.CURVE is slower than both LambdaFitMethod.SHIFTED and
-    LambdaFitMethod.LIN, the later two should be preferred in general.
+    ``LambdaFitMethod.CURVE`` is slower than both ``LambdaFitMethod.SHIFTED`` and
+    ``LambdaFitMethod.LIN``, the later two should be preferred in general.
 
     Reference:
-       Fig. S15 of Supplementary information of
-       "Quantum error correction below the surface code threshold"
-       at https://www.nature.com/articles/s41586-024-08449-y#Sec8
+        Fig. S15 of Supplementary information of
+        "Quantum error correction below the surface code threshold"
+        at https://www.nature.com/articles/s41586-024-08449-y#Sec8
 
     Args:
         distances: An array for code distances as leppr data points.
@@ -438,7 +438,7 @@ def calculate_lambda_and_lambda_stddev(
 
     Raises:
         ValueError: When input data do not match sizes or when duplicated data is
-        provided.
+            provided.
 
     Notes:
         When Λ is very close to 1 (``abs(Λ - 1) < 1e-7``) and ``method == "curve"``,

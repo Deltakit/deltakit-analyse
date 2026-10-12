@@ -107,10 +107,10 @@ def generate_decoder_managers_for_lambda(
             the largest distance and a logical error-rate below ``0.45`` for the
             smallest distance. You will not be able to check those thresholds everytime,
             but the standard errors computed will be lower if they are verified.
-        max_workers: if provided, the number of parallel processes that are used to
-            generate the sampling tasks. If not, default to ``1``.
         memory_generator: a callable that is able to generate memory experiments from a
             given distance and number of rounds.
+        max_workers: if provided, the number of parallel processes that are used to
+            generate the sampling tasks. If not, default to ``1``.
         noise_parameter_names: if provided, human-readable names for each of the
             provided ``noise_parameters``. Defaults to the noise parameter index (i.e.,
             "0", "1", ...).
