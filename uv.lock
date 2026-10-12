@@ -707,7 +707,13 @@ dependencies = [
     { name = "pandas" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "scipy", version = "1.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "tqdm" },
     { name = "uncertainties" },
+]
+
+[package.optional-dependencies]
+vis = [
+    { name = "seaborn" },
 ]
 
 [package.dev-dependencies]
@@ -733,15 +739,22 @@ dev = [
     { name = "scipy-stubs", version = "1.18.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "tomlkit" },
     { name = "types-networkx" },
+    { name = "types-seaborn" },
+    { name = "types-tqdm" },
     { name = "typos" },
     { name = "validate-pyproject" },
 ]
 lint = [
     { name = "deptry" },
     { name = "mypy" },
+    { name = "pandas-stubs" },
     { name = "pydoclint" },
     { name = "ruff" },
+    { name = "scipy-stubs", version = "1.17.1.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "scipy-stubs", version = "1.18.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "types-networkx" },
+    { name = "types-seaborn" },
+    { name = "types-tqdm" },
     { name = "typos" },
 ]
 release = [
@@ -757,6 +770,9 @@ stubs = [
     { name = "pandas-stubs" },
     { name = "scipy-stubs", version = "1.17.1.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "scipy-stubs", version = "1.18.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "types-networkx" },
+    { name = "types-seaborn" },
+    { name = "types-tqdm" },
 ]
 test = [
     { name = "coverage" },
@@ -786,8 +802,11 @@ requires-dist = [
     { name = "pandas", marker = "python_full_version >= '3.15'", specifier = ">=3.0.6,<4" },
     { name = "scipy", specifier = ">=1.15.3,<2" },
     { name = "scipy", marker = "python_full_version >= '3.14'", specifier = ">=1.16.2,<2" },
+    { name = "seaborn", marker = "extra == 'vis'" },
+    { name = "tqdm", specifier = ">=4.66,<5" },
     { name = "uncertainties", specifier = ">=3.2.3,<4" },
 ]
+provides-extras = ["vis"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -797,7 +816,7 @@ dev = [
     { name = "deptry", specifier = ">=0.23,<0.26" },
     { name = "mypy", specifier = ">=1.17,<3" },
     { name = "packaging", specifier = ">=25.0,<27" },
-    { name = "pandas-stubs", specifier = ">=2.2.2" },
+    { name = "pandas-stubs" },
     { name = "pip-audit", specifier = ">=2.7,<3" },
     { name = "pre-commit", specifier = ">=4.2,<5" },
     { name = "pydoclint", specifier = ">=0.8.6,<0.12" },
@@ -808,18 +827,24 @@ dev = [
     { name = "pytest-skip-slow", specifier = ">=0.0.5,<1.2" },
     { name = "python-semantic-release", specifier = ">=10.2,<11" },
     { name = "ruff", specifier = "==0.16.10" },
-    { name = "scipy-stubs", specifier = "~=1.15" },
+    { name = "scipy-stubs" },
     { name = "tomlkit", specifier = ">=0.14,<0.16" },
-    { name = "types-networkx", specifier = ">=3.1,<4" },
+    { name = "types-networkx" },
+    { name = "types-seaborn" },
+    { name = "types-tqdm" },
     { name = "typos", specifier = ">=1.34,<2" },
     { name = "validate-pyproject", specifier = ">=0.24.1,<0.27" },
 ]
 lint = [
     { name = "deptry", specifier = ">=0.23,<0.26" },
     { name = "mypy", specifier = ">=1.17,<3" },
+    { name = "pandas-stubs" },
     { name = "pydoclint", specifier = ">=0.8.6,<0.12" },
     { name = "ruff", specifier = "==0.16.10" },
-    { name = "types-networkx", specifier = ">=3.1,<4" },
+    { name = "scipy-stubs" },
+    { name = "types-networkx" },
+    { name = "types-seaborn" },
+    { name = "types-tqdm" },
     { name = "typos", specifier = ">=1.34,<2" },
 ]
 release = [
@@ -832,8 +857,11 @@ security = [
     { name = "pip-audit", specifier = ">=2.7,<3" },
 ]
 stubs = [
-    { name = "pandas-stubs", specifier = ">=2.2.2" },
-    { name = "scipy-stubs", specifier = "~=1.15" },
+    { name = "pandas-stubs" },
+    { name = "scipy-stubs" },
+    { name = "types-networkx" },
+    { name = "types-seaborn" },
+    { name = "types-tqdm" },
 ]
 test = [
     { name = "coverage", specifier = ">=7.7.0,<8" },
@@ -3773,6 +3801,30 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/fb/a9/a55d05982aafa8777530b287c3dbcc6127914bd1e5f2343b17a5c9def1f0/types_networkx-3.6.1.20261006.tar.gz", hash = "sha256:6c27cc7b49c8b49c4ac7ca2460299a5b43c4dad221e558eb4a9b59c78f19709d", size = 76482, upload-time = "2026-10-06T08:15:37.926Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2b/d0/81f49b8450029396433262c1b036f1928fa073e578991bd9e22ebeb54a60/types_networkx-3.6.1.20261006-py3-none-any.whl", hash = "sha256:8e2fedb83bb906c0d37a6ae020da3adc4abbd6bd999d8dd3d3266216bd6fae07", size = 167424, upload-time = "2026-10-06T08:15:36.734Z" },
+]
+
+[[package]]
+name = "types-seaborn"
+version = "0.13.2.20261006"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "matplotlib" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "pandas-stubs" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a4/34/edc30350ef36e0de71ee2e5f76f54d3d2c2073fe0d6872f4272f9ec24abe/types_seaborn-0.13.2.20261006.tar.gz", hash = "sha256:159c8e572dcec89263de2a84eb4071519c655383bbee66767061566880eb3a8c", size = 30080, upload-time = "2026-10-06T08:16:01.119Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ba/2e/c463d868786f726004be726d5042ace43c49a156a48d53d3ca43d56888ab/types_seaborn-0.13.2.20261006-py3-none-any.whl", hash = "sha256:3bc4c6fdfa9f5a2d5d5d8fe99cba6b3c501fec702cfc57ba10604d2d59ac4570", size = 40860, upload-time = "2026-10-06T08:16:00.116Z" },
+]
+
+[[package]]
+name = "types-tqdm"
+version = "4.70.0.20260906"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fe/92/517d71d5a399cd2f8ead3b4328d987262478f22fbbe7f8312360d4c321d0/types_tqdm-4.70.0.20260906.tar.gz", hash = "sha256:6581dc996152a87d51ce2ea169169187ffc0a96dacdb8adbdef29cbee8c1e631", size = 19309, upload-time = "2026-09-06T06:35:31.916Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/81/ea/d12697988ab2c672877796ecaea69666e2379ee7b40f01f4540250d5a97b/types_tqdm-4.70.0.20260906-py3-none-any.whl", hash = "sha256:c3b88c694928515d601f73fa6646aa43adc0ef735bedbeebf0cc543f6a201ae8", size = 25181, upload-time = "2026-09-06T06:35:30.931Z" },
 ]
 
 [[package]]

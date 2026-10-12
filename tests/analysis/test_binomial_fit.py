@@ -120,6 +120,11 @@ class TestCalculateLepAsymmetric:
         assert best[0] == 0.0
         assert high[0] > 0
 
+    def test_promotes_zero_dimensional_inputs(self) -> None:
+        low, best, high = calculate_lep_asymmetric(np.array(2), np.array(1000))
+        assert low.shape == best.shape == high.shape == (1,)
+        assert best[0] == pytest.approx(0.002)
+
     def test_length_mismatch_raises(self) -> None:
         with pytest.raises(ValueError, match=r"Input data do not match lengths\."):
             calculate_lep_asymmetric([1, 2], [1000])

@@ -7,7 +7,7 @@ import colorsys
 import warnings
 from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,8 +17,14 @@ from matplotlib.colors import ColorConverter, to_rgb
 if TYPE_CHECKING:
     import numpy.typing as npt
     from matplotlib.axes import Axes
+    from matplotlib.backend_bases import RendererBase
     from matplotlib.figure import Figure
     from matplotlib.text import Text
+
+
+class _CanvasWithRenderer(Protocol):
+    def get_renderer(self) -> RendererBase: ...
+
 
 _RIVERLANE_PLOT_COLOURS: list[str] = [
     "#006F62",
@@ -70,9 +76,7 @@ def _text_size_in_data_coordinates(
     Returns:
         the ``(width, height)`` of ``text`` in data coordinates of ``ax``.
     """
-    get_renderer = fig.canvas.get_renderer
-    assert get_renderer is not None
-    renderer = get_renderer()
+    renderer = cast(_CanvasWithRenderer, fig.canvas).get_renderer()
     text_object = ax.text(0.5, 0.5, text)
     bb = text_object.get_window_extent(renderer=renderer).transformed(
         ax.transData.inverted()
@@ -98,9 +102,7 @@ def _draw_line_from_text_to_position(
     """
     # First, get the coordinates at which the line will intersect with the bounding-box
     # of the text.
-    get_renderer = fig.canvas.get_renderer
-    assert get_renderer is not None
-    renderer = get_renderer()
+    renderer = cast(_CanvasWithRenderer, fig.canvas).get_renderer()
     bl, tr = ax.transData.inverted().transform(text.get_window_extent(renderer))
     cx, cy = (tr + bl) / 2
     slope = (cy - y) / (cx - x)

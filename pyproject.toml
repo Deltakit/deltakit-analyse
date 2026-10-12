@@ -52,7 +52,11 @@ dependencies = [
   "matplotlib >=3.9.2, <4; python_version < '3.14'",
   "matplotlib >=3.10.5, <4; python_version >= '3.14'",
   "matplotlib >=3.11.2, <4; python_version >= '3.15'",
+  "tqdm >=4.66, <5",
 ]
+
+[project.optional-dependencies]
+vis = ["seaborn"]
 
 [project.urls]
 Homepage = "https://github.com/riverlane/deltakit-analyse"
@@ -63,7 +67,13 @@ Changelog = "https://github.com/riverlane/deltakit-analyse/releases"
 
 
 [dependency-groups]
-stubs = ["scipy-stubs~=1.15", "pandas-stubs>=2.2.2"]
+stubs = [
+  "scipy-stubs",
+  "pandas-stubs",
+  "types-networkx",
+  "types-seaborn",
+  "types-tqdm",
+]
 test = [
   "pytest >=9, <10",
   "pytest-cov >=7, <8",
@@ -74,16 +84,15 @@ test = [
   "deltakit-explorer>=0.9.4,<0.10",
 ]
 lint = [
+  { include-group = "stubs" },
   "mypy >=1.17, <3",
   "ruff==0.16.10",
   "typos >=1.34, <2",
   "deptry>=0.23,<0.26",
-  "types-networkx >=3.1, <4",
   "pydoclint>=0.8.6,<0.12",
 ]
 security = ["bandit[toml] >=1.8, <2", "pip-audit >=2.7, <3"]
 dev = [
-  { include-group = "stubs" },
   { include-group = "test" },
   { include-group = "lint" },
   { include-group = "security" },
@@ -118,25 +127,17 @@ extend-exclude = [
 
 [tool.deptry]
 known_first_party = ["deltakit_analyse"]
-ignore = ["DEP003"]
 extend_exclude = ["tools/"]
 
-[tool.deptry.per_rule_ignores]
-DEP001 = ["lestim"]
 
 [tool.mypy]
 files = "src/**/*.py"
 # The below list of disabled checks should eventually be empty.
-disable_error_code = "dict-item,misc,arg-type,return-value,union-attr,index,attr-defined,call-overload"
 enable_error_code = ["deprecated"]
 
 [[tool.mypy.overrides]]
-module = ["stim"]
+module = ["stim", "adjustText", "uncertainties", "uncertainties.*"]
 follow_untyped_imports = true
-
-[[tool.mypy.overrides]]
-module = ["lestim"]
-ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["./tests/"]

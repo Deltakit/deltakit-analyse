@@ -11,8 +11,8 @@ import numpy as np
 import numpy.typing as npt
 import scipy.optimize
 from uncertainties import correlated_values
-from uncertainties.umath import exp as uexp
-from uncertainties.umath import log as ulog
+from uncertainties.umath import exp as uexp  # type: ignore[attr-defined]
+from uncertainties.umath import log as ulog  # type: ignore[attr-defined]
 
 from deltakit_analyse._binomial_fit import ConfidenceInterval
 from deltakit_analyse._estimate import Estimate
@@ -373,12 +373,14 @@ def _lambda_curve_fit(
         bounds=(0, np.inf),  # Ensure convergence in pathological cases.
         maxfev=10000,
     )
-    (lamb, lamb_std), (lamb0, lamb0_std) = lambda_from_curve_fit(lamb0, lamb, cov)
+    lambda_estimate, lambda0_estimate = lambda_from_curve_fit(
+        float(np.asarray(lamb0).item()), float(np.asarray(lamb).item()), cov
+    )
     return LambdaData(
-        lambda_=lamb,
-        lambda_std=lamb_std,
-        lambda0=lamb0,
-        lambda0_std=lamb0_std,
+        lambda_=lambda_estimate.value,
+        lambda_std=lambda_estimate.stddev,
+        lambda0=lambda0_estimate.value,
+        lambda0_std=lambda0_estimate.stddev,
         distances=distances,
         leppr=leppr,
         leppr_std=leppr_std,

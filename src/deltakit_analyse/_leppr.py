@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 from scipy.optimize import curve_fit
 from uncertainties import correlated_values, ufloat, unumpy
-from uncertainties.umath import exp as uexp
+from uncertainties.umath import exp as uexp  # type: ignore[attr-defined]
 
 from deltakit_analyse._binomial_fit import (
     DEFAULT_MAX_LIKELIHOOD_FACTOR,
@@ -52,7 +52,9 @@ def log_fidelity_stddev(
     """
     lep_arr = np.asarray(lep, dtype=np.float64)
     std_arr = np.asarray(lep_stddev, dtype=np.float64)
-    uncertain_log_fidelity = unumpy.log(1 - 2 * unumpy.uarray(lep_arr, std_arr))
+    uncertain_log_fidelity = unumpy.log(  # type: ignore[attr-defined]
+        1 - 2 * unumpy.uarray(lep_arr, std_arr)
+    )
     return unumpy.std_devs(uncertain_log_fidelity).astype(np.float64)
 
 
@@ -346,7 +348,9 @@ def compute_logical_error_per_round(
             estimated_spam_error,
             estimated_spam_error_stddev,
         ),
-    ) = epsilon_and_spam_from_log_fit(slope, offset, cov)
+    ) = epsilon_and_spam_from_log_fit(
+        float(np.asarray(slope).item()), float(np.asarray(offset).item()), cov
+    )
     return LogicalErrorProbabilityPerRoundData(
         leppr=estimated_logical_error_per_round,
         leppr_stddev=estimated_logical_error_per_round_stddev,
@@ -625,8 +629,8 @@ def calculate_lep_asymmetric(
         ...     shots=[500000] * 3,
         ... )
     """
-    fails = np.asarray([fails]) if isinstance(fails, int) else np.asarray(fails)
-    shots = np.asarray([shots]) if isinstance(shots, int) else np.asarray(shots)
+    fails = np.atleast_1d(fails)
+    shots = np.atleast_1d(shots)
     if len(fails) != len(shots):
         msg = "Input data do not match lengths."
         raise ValueError(msg)
