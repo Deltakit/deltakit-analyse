@@ -212,7 +212,9 @@ def _assert_axes_match(ax_actual, ax_expected):
     ]
 
     assert len(ax_actual.lines) == len(ax_expected.lines)
-    for actual_line, expected_line in zip(ax_actual.lines, ax_expected.lines, strict=True):
+    for actual_line, expected_line in zip(
+        ax_actual.lines, ax_expected.lines, strict=True
+    ):
         np.testing.assert_allclose(actual_line.get_xdata(), expected_line.get_xdata())
         np.testing.assert_allclose(actual_line.get_ydata(), expected_line.get_ydata())
         assert actual_line.get_label() == expected_line.get_label()
