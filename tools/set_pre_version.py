@@ -24,15 +24,13 @@ if __name__ == "__main__":
         description="Append prerelease suffix to the base version."
     )
     parser.add_argument(
-        "-t",
-        "--timestamp",
-        help=("Prerelease version timestamp suffix in seconds."),
+        "-t", "--timestamp", help="Prerelease version timestamp suffix in seconds."
     )
     parser.add_argument(
         "-c",
         "--commit",
         default=None,
-        help=("Prerelease version short commit hash suffix."),
+        help="Prerelease version short commit hash suffix.",
     )
     args = parser.parse_args()
     timestamp_version_suffix = args.timestamp
