@@ -35,7 +35,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     timestamp_version_suffix = args.timestamp
 
-    commit_version_suffix = ".g" + args.commit if args.commit is not None else ""
+    commit_version_suffix = "+g" + args.commit if args.commit is not None else ""
 
     # Update project version with suffix
     path = PROJ_HOME / "pyproject.toml"
