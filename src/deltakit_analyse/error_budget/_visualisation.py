@@ -7,7 +7,7 @@ import colorsys
 import warnings
 from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,8 +17,14 @@ from matplotlib.colors import ColorConverter, to_rgb
 if TYPE_CHECKING:
     import numpy.typing as npt
     from matplotlib.axes import Axes
+    from matplotlib.backend_bases import RendererBase
     from matplotlib.figure import Figure
     from matplotlib.text import Text
+
+
+class _CanvasWithRenderer(Protocol):
+    def get_renderer(self) -> RendererBase: ...
+
 
 _RIVERLANE_PLOT_COLOURS: list[str] = [
     "#006F62",
@@ -70,9 +76,7 @@ def _text_size_in_data_coordinates(
     Returns:
         the ``(width, height)`` of ``text`` in data coordinates of ``ax``.
     """
-    get_renderer = getattr(fig.canvas, "get_renderer")
-    assert get_renderer is not None
-    renderer = get_renderer()
+    renderer = cast(_CanvasWithRenderer, fig.canvas).get_renderer()
     text_object = ax.text(0.5, 0.5, text)
     bb = text_object.get_window_extent(renderer=renderer).transformed(
         ax.transData.inverted()
@@ -84,7 +88,8 @@ def _text_size_in_data_coordinates(
 def _draw_line_from_text_to_position(
     fig: Figure, ax: Axes, text: Text, x: float, y: float, colour: str, t: float = 0.2
 ) -> None:
-    """Draw a line between text and (x, y) but with the end at (x, y) slightly shortened.
+    """Draw a line between text and (x, y) but with the end at (x, y) slightly
+    shortened.
 
     Args:
         fig: figure ``text`` is drawn on.
@@ -97,9 +102,7 @@ def _draw_line_from_text_to_position(
     """
     # First, get the coordinates at which the line will intersect with the bounding-box
     # of the text.
-    get_renderer = getattr(fig.canvas, "get_renderer")
-    assert get_renderer is not None
-    renderer = get_renderer()
+    renderer = cast(_CanvasWithRenderer, fig.canvas).get_renderer()
     bl, tr = ax.transData.inverted().transform(text.get_window_extent(renderer))
     cx, cy = (tr + bl) / 2
     slope = (cy - y) / (cx - x)
@@ -108,6 +111,116 @@ def _draw_line_from_text_to_position(
 
     x, y = (1 - t) * x + t * x_intersect, (1 - t) * y + t * y_intersect
     ax.plot([x, x_intersect], [y, y_intersect], color=colour)
+
+
+def _draw_error_budget_bars(
+    fig: Figure,
+    ax: Axes,
+    contributions: npt.NDArray[np.floating] | Sequence[float],
+    contribution_descriptions: Sequence[str],
+    contributions_stddev: npt.NDArray[np.floating] | Sequence[float | None] | None,
+    excess_noise_description: str,
+    bar_height: float,
+    bar_center: float,
+) -> tuple[float, list[tuple[float, str, str]], list[float]]:
+    text_widths = [
+        _text_size_in_data_coordinates(fig, ax, description)[0]
+        for description in contribution_descriptions
+    ]
+    overflow_labels: list[tuple[float, str, str]] = []
+    target_centers: list[float] = []
+    offset = 0.0
+
+    for i, contribution in enumerate(contributions):
+        colour = _RIVERLANE_PLOT_COLOURS[i % len(_RIVERLANE_PLOT_COLOURS)]
+        description = contribution_descriptions[i]
+        kwargs: dict[str, Any] = {
+            "color": colour,
+            "edgecolor": colour,
+            "ecolor": _scale_lightness(colour, 0.8),
+        }
+        if description.lower() == excess_noise_description.lower():
+            kwargs["color"] = "#FFFFFF00"
+            kwargs["edgecolor"] = _RIVERLANE_NEUTRAL_GREY
+            kwargs["hatch"] = "///"
+            kwargs["ecolor"] = _scale_lightness(_RIVERLANE_NEUTRAL_GREY, 0.8)
+
+        stddev = contributions_stddev[i] if contributions_stddev is not None else None
+        xerr_bounds = (
+            ((min(stddev, abs(contribution)),), (stddev,))
+            if stddev is not None
+            else None
+        )
+        bar = ax.barh(
+            bar_center,
+            contribution,
+            height=bar_height,
+            left=offset,
+            xerr=xerr_bounds,
+            capsize=2,
+            **kwargs,
+        )
+        text_colour = (
+            _RIVERLANE_DARK_TEXT_COLOUR
+            if _colour_brightness(kwargs["color"]) > 0.5
+            else _RIVERLANE_WHITE_TEXT_COLOUR
+        )
+        if text_widths[i] < 0.8 * contribution:
+            ax.bar_label(
+                bar,
+                labels=[description],
+                label_type="center",
+                color=text_colour,
+            )
+        else:
+            center = offset + contribution / 2
+            overflow_labels.append((center, description, kwargs["color"]))
+            target_centers.append(center)
+        offset += contribution
+
+    return offset, overflow_labels, target_centers
+
+
+def _position_overflow_labels(
+    fig: Figure,
+    ax: Axes,
+    overflow_labels: list[tuple[float, str, str]],
+    target_centers: list[float],
+    label_y_positions: list[float],
+    bar_top: float,
+) -> None:
+    texts = [
+        ax.text(
+            center,
+            label_y_positions[i % len(label_y_positions)],
+            text,
+            horizontalalignment="center",
+            color=colour,
+        )
+        for i, (center, text, colour) in enumerate(overflow_labels)
+    ]
+
+    if texts:
+        ret = adjust_text(
+            texts,
+            target_x=target_centers,
+            target_y=[bar_top for _ in target_centers],
+            avoid_self=False,
+            only_move=dict.fromkeys(("explode", "pull", "text", "static"), "x"),
+            ax=ax,
+        )
+        if ret is None:
+            msg = (
+                "Call to adjust_text failed. Labels will likely not be well positioned."
+            )
+            warnings.warn(msg, stacklevel=2)
+        else:
+            texts, _ = ret
+
+    for target, text, (_, _, colour) in zip(
+        target_centers, texts, overflow_labels, strict=True
+    ):
+        _draw_line_from_text_to_position(fig, ax, text, target, bar_top, colour, t=0)
 
 
 def plot_error_budget(
@@ -181,108 +294,25 @@ def plot_error_budget(
     if fig is None or ax is None:
         fig, ax = plt.subplots()
 
-    # Plot a stacked horizontal bar plot. Do not include labels that do not fit in their
-    # respective bar, but keep them to include them later.
-    non_fitting_texts: list[str] = []
-    nft_centres: list[float] = []
-    nft_bar_colours: list[str] = []
-    nft_bar_centres: list[float] = []
-    twidths: list[float] = [
-        _text_size_in_data_coordinates(fig, ax, d)[0] for d in contribution_descriptions
-    ]
-
-    offset: float = 0
-    for i in range(len(contributions)):
-        colour = _RIVERLANE_PLOT_COLOURS[i % len(_RIVERLANE_PLOT_COLOURS)]
-        description = contribution_descriptions[i]
-        contribution = contributions[i]
-        twidth = twidths[i]
-        # We need to handle the special case of the excess noise. Doing that with
-        # kwargs.
-        kwargs: dict[str, Any] = {
-            "color": colour,
-            "edgecolor": colour,
-            "ecolor": _scale_lightness(colour, 0.8),
-        }
-        if description.lower() == excess_noise_description.lower():
-            # Note that the RGB values of the colour below matter: we want it to be
-            # white because the background will be white, and text colour will be picked
-            # according to the background colour brightness.
-            kwargs["color"] = "#FFFFFF00"
-            kwargs["edgecolor"] = _RIVERLANE_NEUTRAL_GREY
-            kwargs["hatch"] = "///"
-            kwargs["ecolor"] = _scale_lightness(_RIVERLANE_NEUTRAL_GREY, 0.8)
-        stddev = contributions_stddev[i] if contributions_stddev is not None else None
-        xerr_bounds = (
-            ((min(stddev, abs(contribution)),), (stddev,))
-            if stddev is not None
-            else None
-        )
-        bar = ax.barh(
-            bar_center,
-            contribution,
-            height=bar_height,
-            left=offset,
-            xerr=xerr_bounds,
-            capsize=2,
-            **kwargs,
-        )
-        text_colour = (
-            _RIVERLANE_DARK_TEXT_COLOUR
-            if _colour_brightness(kwargs["color"]) > 0.5
-            else _RIVERLANE_WHITE_TEXT_COLOUR
-        )
-        if twidth < 0.8 * contribution:
-            ax.bar_label(
-                bar,
-                labels=[description],
-                label_type="center",
-                color=text_colour,
-            )
-        else:
-            non_fitting_texts.append(description)
-            nft_centres.append(offset + contribution / 2)
-            nft_bar_colours.append(kwargs["color"])
-            nft_bar_centres.append(offset + contribution / 2)
-        offset += contribution
+    offset, overflow_labels, target_centers = _draw_error_budget_bars(
+        fig,
+        ax,
+        contributions,
+        contribution_descriptions,
+        contributions_stddev,
+        excess_noise_description,
+        bar_height,
+        bar_center,
+    )
 
     # Ensure that axes are fixed before adding texts and automatically place them.
     # Fix the aspect ratio for a better looking plot.
     ax.set_aspect((offset / ymax) * (1 / 5))
     # Fixing the Y-axis bounds
     ax.set_ybound(0, ymax)
-    # Add labels that did not fit into the bar.
-    texts = [
-        ax.text(
-            center,
-            non_fitting_texts_ys[i % len(non_fitting_texts_ys)],
-            text,
-            horizontalalignment="center",
-            color=colour,
-        )
-        for i, (center, text, colour) in enumerate(
-            zip(nft_centres, non_fitting_texts, nft_bar_colours)
-        )
-    ]
-
-    if texts:
-        ret = adjust_text(
-            texts,
-            target_x=nft_bar_centres,
-            target_y=[bar_top for _ in range(len(nft_bar_centres))],
-            avoid_self=False,
-            only_move=dict.fromkeys(("explode", "pull", "text", "static"), "x"),
-            ax=ax,
-        )
-        if ret is None:
-            warnings.warn(
-                "Call to adjust_text failed. Labels will likely not be well positioned."
-            )
-        else:
-            texts, _ = ret
-    # Draw lines
-    for target, text, colour in zip(nft_bar_centres, texts, nft_bar_colours):
-        _draw_line_from_text_to_position(fig, ax, text, target, bar_top, colour, t=0)
+    _position_overflow_labels(
+        fig, ax, overflow_labels, target_centers, non_fitting_texts_ys, bar_top
+    )
 
     # Removing the ticks on the Y-axis as these have no meaning here.
     ax.set_yticks([])

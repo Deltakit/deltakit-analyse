@@ -47,6 +47,8 @@ def compute_ideal_rounds_for_noise_model_and_distance(
             ``target_stddev``.
         batch_size: number of shots to perform per batch. Early-stopping conditions are
             checked after each chunks of ``batch_size`` shots.
+        memory_generator: a callable returning a memory experiment from provided
+            distance and number of rounds.
         initial_round_number: number of rounds to start the exploration with. Should be
             strictly positive. Should likely not be ``1`` because data for ``1`` round
             is often an outlier. Only set this to ``1`` if you understand what you are
@@ -63,8 +65,6 @@ def compute_ideal_rounds_for_noise_model_and_distance(
             ``max_round_number``. Default to a geometric progression with a
             multiplicative factor of ``4``, but can be anything provided that it is
             strictly increasing.
-        memory_generator: a callable returning a memory experiment from provided
-            distance and number of rounds.
 
     Returns:
         a list containing number of rounds resulting from successive applications of

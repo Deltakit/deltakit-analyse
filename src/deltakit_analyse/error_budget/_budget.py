@@ -21,8 +21,10 @@ class ErrorBudgetResult:
     """Result of an error budgeting computation.
 
     Attributes:
-        contributions: contributions for each of the noise parameters to the error budget.
-        contribution_stddevs: estimation of the standard deviation of each of the ``contributions``.
+        contributions: contributions for each of the noise parameters to the error
+            budget.
+        contribution_stddevs: estimation of the standard deviation of each of the
+            ``contributions``.
     """
 
     contributions: tuple[float, ...]
@@ -35,7 +37,8 @@ class ErrorBudgetResult:
 
     @property
     def lambda_stddev_estimate(self) -> float:
-        """Returns an estimation of the standard deviation on Λ according to the computed budget."""
+        """Returns an estimation of the standard deviation on Λ according to the
+        computed budget."""
         return float(np.sqrt(np.sum(np.asarray(self.contribution_stddevs) ** 2)))
 
     @staticmethod
@@ -69,8 +72,8 @@ def get_error_budget(
     num_rounds_by_distances: Mapping[int, Sequence[int]],
     noise_parameters_exploration_bounds: list[tuple[float, float]],
     memory_generator: MemoryGenerator | Mapping[int, Mapping[int, Circuit]],
-    fitting_parameters: FittingParameters = FittingParameters(),
-    sampling_parameters: SamplingParameters = SamplingParameters(),
+    fitting_parameters: FittingParameters | None = None,
+    sampling_parameters: SamplingParameters | None = None,
 ) -> ErrorBudgetResult:
     """Compute the error budget of the provided ``noise_model``.
 
@@ -96,21 +99,26 @@ def get_error_budget(
             upper) bound is above ``100 / max_shots`` to ensure enough fails are
             observed with ``max_shots`` shots (resp. below ``1 / 2`` to ensure that we
             can compute the logical error probability per round).
-        fitting_parameters: additional parameters relating to how the gradient is
-            estimated.
-        sampling_parameters: additional parameters relating to the sampling tasks used to
-            estimate 1 / Λ indirectly.
         memory_generator: a callable that can generate a memory experiment. The
             resulting circuit will go through the provided ``noise_model`` for different
             values of the noise parameters.
+        fitting_parameters: additional parameters relating to how the gradient is
+            estimated.
+        sampling_parameters: additional parameters relating to the sampling tasks used
+            to estimate 1 / Λ indirectly.
 
     Returns:
         the error-budgeting result, which consists of an array of contributions for each
         of the noise parameters of the provided ``noise_model`` along with their
         associated standard deviations.
     """
-    # We will compute the gradient at the half point following the methodology outlined in
-    # https://doi.org/10.1038/s41586-021-03588-y (Supplementary materials, Section VIII.C.).
+    if fitting_parameters is None:
+        fitting_parameters = FittingParameters()
+    if sampling_parameters is None:
+        sampling_parameters = SamplingParameters()
+    # We will compute the gradient at the half point following the methodology outlined
+    # in https://doi.org/10.1038/s41586-021-03588-y (Supplementary materials, Section
+    # VIII.C.).
     point = np.asarray(noise_parameters) / 2
     # Evaluate the gradient.
     gradient, gradient_stddev = inverse_lambda_gradient_at(

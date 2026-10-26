@@ -6,12 +6,12 @@ import numpy as np
 import numpy.typing as npt
 import scipy.optimize
 
-# Number of candidate points the c-optimal optimiser searches over. In testing, this seemed like
-# a healthy balance of precision and cost.
+# Number of candidate points the c-optimal optimiser searches over. In testing, this
+# seemed like a healthy balance of precision and cost.
 _C_OPTIMAL_CANDIDATE_GRID_SIZE = 50
 
-# We have to set a maximum threshold in our c optimal design to prevent it from returning
-# a singular matrix (i.e just sample 1 point for every run)
+# We have to set a maximum threshold in our c optimal design to prevent it from
+# returning a singular matrix (i.e just sample 1 point for every run)
 _C_OPTIMAL_COND_THRESHOLD = 1e10
 
 
@@ -46,9 +46,9 @@ class GradientFitDiscretisationGenerator(Protocol):
                 computed at each of the points returned by this function.
 
         Returns:
-            a sorted array of ``num_points`` points within ``[a, b]`` and without duplicates
-            that should be used to evaluate the function to fit with a degree ``degree``
-            polynomial.
+            a sorted array of ``num_points`` points within ``[a, b]`` and without
+            duplicates that should be used to evaluate the function to fit with a degree
+            ``degree`` polynomial.
         """
         ...
 
@@ -179,8 +179,10 @@ def _c_optimal_objective(
     u = 2 * (x - a) / (b - a) - 1
     uc = 2 * (c - a) / (b - a) - 1
 
-    X = np.vander(u, degree + 1, increasing=True)
-    XTX = X.T @ X
+    # Ignore upper-case warning here as the following are matrix names which are
+    # conventionally written in upper-case.
+    X = np.vander(u, degree + 1, increasing=True)  # ruff: ignore[non-lowercase-variable-in-function]
+    XTX = X.T @ X  # ruff: ignore[non-lowercase-variable-in-function]
 
     # Reject ill-conditioned (effectively singular) designs. The optimiser
     # sees +inf and naturally avoids these regions.
@@ -243,7 +245,10 @@ def get_c_optimal_points(
 
     _check_interval(a, b, c)
     if num_points < degree + 1:
-        msg = f"For a degree {degree} polynomial, you must sample at least {degree + 1} points."
+        msg = (
+            f"For a degree {degree} polynomial, you must sample at least "
+            f"{degree + 1} points."
+        )
         raise ValueError(msg)
 
     candidate_grid = np.linspace(a, b, _C_OPTIMAL_CANDIDATE_GRID_SIZE)
@@ -253,9 +258,9 @@ def get_c_optimal_points(
     # is a standard approach to this kind of problem. It doesn't rely on finding the
     # gradient of the objective function and it tests many regions of the solution
     # space simultaneously (unlike simulated annealing).
-    # The mutation and recombination parameters were chosen to be near the SciPy defaults
-    # with some brief testing to verify. The workers and seed parameters make the output
-    # deterministic (given the same package versions)
+    # The mutation and recombination parameters were chosen to be near the SciPy
+    # defaults with some brief testing to verify. The workers and seed parameters make
+    # the output deterministic (given the same package versions)
     result = scipy.optimize.differential_evolution(
         _c_optimal_objective,
         bounds=bounds,

@@ -79,7 +79,7 @@ class TestFitBinomial:
         [(10, 11, 1000.0), (-1, 0, 1000.0), (10, 5, 0.5)],
     )
     def test_invalid_inputs_raise(self, shots: int, hits: int, factor: float) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=r"must be >= 1|Need 0 <= num_hits"):
             fit_binomial(num_shots=shots, num_hits=hits, max_likelihood_factor=factor)
 
 
@@ -94,7 +94,9 @@ class TestFitBinomialBatch:
         assert high[0] == pytest.approx(scalar.high)
 
     def test_mismatched_shapes_raise(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match=r"num_shots and num_hits must have the same shape\."
+        ):
             fit_binomial_batch([1000, 2000], [3])
 
 
@@ -118,12 +120,20 @@ class TestCalculateLepAsymmetric:
         assert best[0] == 0.0
         assert high[0] > 0
 
+    def test_promotes_zero_dimensional_inputs(self) -> None:
+        low, best, high = calculate_lep_asymmetric(np.array(2), np.array(1000))
+        assert low.shape == best.shape == high.shape == (1,)
+        assert best[0] == pytest.approx(0.002)
+
     def test_length_mismatch_raises(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=r"Input data do not match lengths\."):
             calculate_lep_asymmetric([1, 2], [1000])
 
     def test_negative_fails_raise(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError,
+            match=r"`fails` must be non-negative and `shots` strictly positive\.",
+        ):
             calculate_lep_asymmetric([-1], [1000])
 
 
@@ -148,7 +158,10 @@ class TestFitLepprAndSpam:
         )
 
     def test_length_mismatch_raises(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError,
+            match=r"num_rounds, num_fails and num_shots must have the same length\.",
+        ):
             fit_leppr_and_spam([2, 4], [1], [1000])
 
     def test_fixed_spam_pins_spam_and_tightens_leppr(self) -> None:

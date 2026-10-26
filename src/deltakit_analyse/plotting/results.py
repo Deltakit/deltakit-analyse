@@ -47,7 +47,9 @@ def _lambda_interpolated(
 
 
 def _lep_interpolated(
-    spam: float, leppr: float, rounds_interpolated: npt.NDArray[np.floating]
+    spam: float | npt.NDArray[np.floating],
+    leppr: float | npt.NDArray[np.floating],
+    rounds_interpolated: npt.NDArray[np.floating],
 ) -> npt.NDArray[np.floating]:
     """Compute the logical error probability for the given parameters.
 
@@ -150,7 +152,8 @@ class Interpolated:
         upper_boundary: Array representing the upper bound of the confidence interval
             corresponding to ``interpolated``.
         fit_label: Label describing the fitted/interpolated data (e.g., legend entry).
-        confidence_interval_label: Label describing the confidence interval region (e.g., legend entry).
+        confidence_interval_label: Label describing the confidence interval region
+            (e.g., legend entry).
     """
 
     interpolated: npt.NDArray[np.floating]
@@ -178,14 +181,17 @@ class Interpolated:
             msg = (
                 "The 'interpolated', 'lower_boundary', and 'upper_boundary' arrays "
                 f"must have the same shape. Got {self.interpolated.shape}, "
-                f"{self.lower_boundary.shape}, and {self.upper_boundary.shape} respectively."
+                f"{self.lower_boundary.shape}, and {self.upper_boundary.shape} "
+                "respectively."
             )
             raise ValueError(msg)
 
         # Check that provided interpolated is within [0, 1]
         # boundaries are also within [0, 1]
-        # Since the fit could technically exceed it slightly or we just want to warn/clip.
-        # Provided `interpolated` is within `[0, 1)`, boundaries are also within `[0, 1)`.
+        # Since the fit could technically exceed it slightly or we just want to
+        # warn/clip.
+        # Provided `interpolated` is within `[0, 1)`, boundaries are also within
+        # `[0, 1)`.
         if not np.all((self.interpolated >= 0) & (self.interpolated <= 1)):
             msg = "Interpolated values must be within [0, 1]"
             raise ValueError(msg)
@@ -229,12 +235,14 @@ def interpolate_lambda(
     """Interpolate the Λ fit and compute confidence bands.
 
     Args:
-        lambda_data: Result of a fit containing Λ, Λ₀, their standard deviations, and the original data.
+        lambda_data: Result of a fit containing Λ, Λ₀, their standard deviations, and
+            the original data.
         num_sigmas: Number of standard deviations for the error band. Default 3.
         num_points: Number of interpolation points. Default 200.
 
     Returns:
-        A container for the interpolated fit data with error boundaries and confidence interval.
+        A container for the interpolated fit data with error boundaries and confidence
+        interval.
     """
     # Reshape distances into a (1, num_points) array for vectorisation
     distances_interpolated = np.linspace(
@@ -293,7 +301,8 @@ def interpolate_lambda(
 
 @dataclass(frozen=True)
 class LogicalErrorProbabilityPerRoundResult(Interpolated):
-    """Result type holding the data needed to plot a LogicalErrorProbabilityPerRound (LEPPR) fit.
+    """Result type holding the data needed to plot a LogicalErrorProbabilityPerRound
+    (LEPPR) fit.
 
     Attributes:
         rounds: Interpolated rounds grid for the fit curve.

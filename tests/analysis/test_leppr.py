@@ -82,12 +82,10 @@ class TestLEPPerRoundComputation:
         lep = (1 - fidelities) / 2
         lep_stddev = lep * (1 - lep) / sqrt(100_000)
 
-        with pytest.warns(UserWarning) as reporter:
+        with pytest.warns(
+            UserWarning, match=r"Found an invalid number of rounds: -?[0-9]+"
+        ):
             compute_logical_error_per_round(nprounds, lep, lep_stddev)
-        # Check that at least the "invalid number of rounds" warning has been raised
-        # once or more.
-        pattern = r"Found an invalid number of rounds: -?[0-9]+"
-        assert any(re.match(pattern, str(warning.message)) for warning in reporter)
 
     def test_real_world_example(self):
         # Note that this test fails when the ``bounds`` optional parameter is set in the
@@ -128,7 +126,12 @@ class TestLEPPerRoundComputation:
         with pytest.raises(ValueError, match=msg):
             compute_logical_error_per_round([], [], [])
 
-        with pytest.raises(ValueError, match=msg), pytest.warns(UserWarning):
+        with (
+            pytest.raises(ValueError, match=msg),
+            pytest.warns(
+                UserWarning, match=r"Found an invalid number of rounds: -?[0-9]+"
+            ),
+        ):
             compute_logical_error_per_round([0], [0.1], [0.001])
 
     def test_warn_when_linear_fit_is_bad(self):
@@ -166,12 +169,12 @@ class TestLEPPerRoundComputation:
         lep = (1 - fidelity) / 2
         lep_stddev = lep * (1 - lep) / sqrt(100_000)
 
-        with pytest.warns(UserWarning) as warning_collector:
-            res = compute_logical_error_per_round([rounds], [lep], [lep_stddev])
         expected_message = (
             "^Only one valid data-point provided for logical error probability per "
             "round. Continuing computation assuming that SPAM error is negligible.$"
         )
+        with pytest.warns(UserWarning, match=expected_message) as warning_collector:
+            res = compute_logical_error_per_round([rounds], [lep], [lep_stddev])
         assert any(
             re.match(expected_message, str(w.message)) for w in warning_collector
         ), "Expected to get a warning on single data-point being used."

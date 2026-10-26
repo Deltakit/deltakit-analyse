@@ -52,7 +52,11 @@ dependencies = [
   "matplotlib >=3.9.2, <4; python_version < '3.14'",
   "matplotlib >=3.10.5, <4; python_version >= '3.14'",
   "matplotlib >=3.11.2, <4; python_version >= '3.15'",
+  "tqdm >=4.66.3, <5",
 ]
+
+[project.optional-dependencies]
+vis = ["seaborn>=0.13,<0.14"]
 
 [project.urls]
 Homepage = "https://github.com/riverlane/deltakit-analyse"
@@ -63,9 +67,15 @@ Changelog = "https://github.com/riverlane/deltakit-analyse/releases"
 
 
 [dependency-groups]
-stubs = ["scipy-stubs~=1.15", "pandas-stubs>=2.2.2"]
+stubs = [
+  "scipy-stubs",
+  "pandas-stubs",
+  "types-networkx",
+  "types-seaborn",
+  "types-tqdm",
+]
 test = [
-  "pytest >=9, <10",
+  "pytest >=9.0.3, <10",
   "pytest-cov >=7, <8",
   "pytest-mock >=3.14, <4",
   "pytest-skip-slow>=0.0.5,<1.2",
@@ -74,68 +84,32 @@ test = [
   "deltakit-explorer>=0.9.4,<0.10",
 ]
 lint = [
+  { include-group = "stubs" },
   "mypy >=1.17, <3",
   "ruff==0.16.10",
   "typos >=1.34, <2",
   "deptry>=0.23,<0.26",
-  "types-networkx >=3.1, <4",
   "pydoclint>=0.8.6,<0.12",
 ]
 security = ["bandit[toml] >=1.8, <2", "pip-audit >=2.7, <3"]
 dev = [
-  { include-group = "stubs" },
   { include-group = "test" },
   { include-group = "lint" },
   { include-group = "security" },
   { include-group = "release" },
-  "pre-commit >=4.2, <5",
+  "pre-commit >=4.7, <5",
   "validate-pyproject>=0.24.1,<0.27",
 ]
-release = [
-  "packaging >=25.0, <27",
-  "tomlkit<0.16,>=0.14",
-  "python-semantic-release >=10.2, <11",
-]
+release = ["packaging >=25.0, <27", "tomlkit<0.16,>=0.14"]
 
 [tool.typos.default]
-locale = 'en-gb'
 extend-ignore-re = [
   # Ignore jupyter notebook cell IDs
   "\"id\"\\s*:\\s*\"[0-9a-f]{8,}\"",
 ]
 
 [tool.typos.default.extend-words]
-# Don't correct "iy" - often used in the context of "probability of an IY operation"
-iy = "iy"
-iz = "iz"
-IZ = "IZ"
-anc = "anc"
-BA = "BA"
-youre = "you're"
-distribtuion = "distribution"
-interm = "interm"
-ket = "ket"
-ND = "ND"                         # part of NDArray
-Alise = "Alise"
-DEPOLARIZE = "DEPOLARIZE"
-depolarization = "depolarization"
-depolarizing = "depolarizing"
-Authorization = "Authorization"   # Web-related field.
-color = "color"                   # Used in matplotlib and stim APIs.
-colors = "colors"
-optimize = "optimize"             # scipy.optimize
-ax = "ax"                         # Typical naming for matplotlib Axes instances.
-center = "center"
-stabilizer = "stabilizer"
-stabilizers = "stabilizers"
-synchronize = "synchronize"       # multiprocessing import
-neighbors = "neighbors"
-capitalize = "capitalize"
-labeled = "labeled"
-labeler = "labeler"
-unrealized = "unrealized"
-writeable = "writeable"           # Used in numpy APIs.
-CPY = "CPY"                       # A ruff rule identifier
+CPY = "CPY" # A ruff rule identifier
 
 [tool.typos.files]
 # Paths/patterns to exclude from spell checking
@@ -149,25 +123,17 @@ extend-exclude = [
 
 [tool.deptry]
 known_first_party = ["deltakit_analyse"]
-ignore = ["DEP003"]
 extend_exclude = ["tools/"]
 
-[tool.deptry.per_rule_ignores]
-DEP001 = ["lestim"]
 
 [tool.mypy]
 files = "src/**/*.py"
 # The below list of disabled checks should eventually be empty.
-disable_error_code = "dict-item,misc,arg-type,return-value,union-attr,index,attr-defined,call-overload"
 enable_error_code = ["deprecated"]
 
 [[tool.mypy.overrides]]
-module = ["stim"]
+module = ["stim", "adjustText", "uncertainties", "uncertainties.*"]
 follow_untyped_imports = true
-
-[[tool.mypy.overrides]]
-module = ["lestim"]
-ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["./tests/"]

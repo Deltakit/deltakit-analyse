@@ -11,8 +11,8 @@ import numpy as np
 import numpy.typing as npt
 import scipy.optimize
 from uncertainties import correlated_values
-from uncertainties.umath import exp as uexp
-from uncertainties.umath import log as ulog
+from uncertainties.umath import exp as uexp  # type: ignore[attr-defined]
+from uncertainties.umath import log as ulog  # type: ignore[attr-defined]
 
 from deltakit_analyse._binomial_fit import ConfidenceInterval
 from deltakit_analyse._estimate import Estimate
@@ -116,21 +116,23 @@ class LambdaData:
         - d is the code distance
 
     Attributes:
-        lambda_: Error suppression factor. The underscore avoids shadowing Python keyword ``lambda``.
+        lambda_: Error suppression factor. The underscore avoids shadowing Python
+            keyword ``lambda``.
         lambda_std: Error suppression factor standard deviation.
         lambda0: Error suppression prefactor.
         lambda0_std: Error suppression prefactor standard deviation.
         distances: An array of code distances.
         leppr: An array for leppr computed for all code distances.
-        leppr_std: An array for leppr standard deviation computed for all code distances.
+        leppr_std: An array for leppr standard deviation computed for all code
+            distances.
         lambda_interval: Asymmetric confidence interval ``(low, best, high)`` for Λ.
             Only set by :func:`calculate_lambda_asymmetric`, otherwise None.
         lambda0_interval: Asymmetric confidence interval ``(low, best, high)`` for Λ₀,
             or None.
 
     Note:
-        This class maintains the invariant that the lengths for 'distances', 'leppr' and 'leppr_std'
-        match.
+        This class maintains the invariant that the lengths for ``distances``, ``leppr``
+        and ``leppr_std`` match.
     """
 
     lambda_: float
@@ -229,8 +231,9 @@ def _lambda_shifted_fit(
     # Prepare log data for linear fit.
     log_leppr = np.log(leppr)
     log_leppr_std = leppr_std / leppr
-    # Fitting with the old 'numpy.polyfit' API provides standard deviations and a covariance matrix over the
-    # new 'numpy.polynomial.Polyfit' API. See for instance the transition guide:
+    # Fitting with the old 'numpy.polyfit' API provides standard deviations and a
+    # covariance matrix over the new 'numpy.polynomial.Polyfit' API. See for instance
+    # the transition guide:
     # https://numpy.org/doc/stable/reference/routines.polynomials.html
     (slope, offset), cov = np.polyfit(
         distances,
@@ -303,8 +306,9 @@ def _lambda_lin_fit(
     # Prepare log data for linear fit.
     log_leppr = np.log(leppr)
     log_leppr_std = leppr_std / leppr
-    # Fitting with the old 'numpy.polyfit' API provides standard deviations and a covariance matrix over the
-    # new 'numpy.polynomial.Polyfit' API. See for instance the transition guide:
+    # Fitting with the old 'numpy.polyfit' API provides standard deviations and a
+    # covariance matrix over the new 'numpy.polynomial.Polyfit' API. See for instance
+    # the transition guide:
     # https://numpy.org/doc/stable/reference/routines.polynomials.html
     (slope, offset), cov = np.polyfit(
         (distances + 1) / 2,
@@ -369,12 +373,14 @@ def _lambda_curve_fit(
         bounds=(0, np.inf),  # Ensure convergence in pathological cases.
         maxfev=10000,
     )
-    (lamb, lamb_std), (lamb0, lamb0_std) = lambda_from_curve_fit(lamb0, lamb, cov)
+    lambda_estimate, lambda0_estimate = lambda_from_curve_fit(
+        float(np.asarray(lamb0).item()), float(np.asarray(lamb).item()), cov
+    )
     return LambdaData(
-        lambda_=lamb,
-        lambda_std=lamb_std,
-        lambda0=lamb0,
-        lambda0_std=lamb0_std,
+        lambda_=lambda_estimate.value,
+        lambda_std=lambda_estimate.stddev,
+        lambda0=lambda0_estimate.value,
+        lambda0_std=lambda0_estimate.stddev,
         distances=distances,
         leppr=leppr,
         leppr_std=leppr_std,
@@ -396,42 +402,45 @@ def calculate_lambda_and_lambda_stddev(
 ) -> LambdaData:
     """Estimate the error suppression factor (Λ) and its standard deviation.
 
-    This function fits the scaling of the logical error probability per round
-    (leppr) and propagates its standard deviation (leppr_std) through the
-    fitting method as a function of code distance.
+    This function fits the scaling of the logical error probability per round (leppr)
+    and propagates its standard deviation (leppr_std) through the fitting method as a
+    function of code distance.
 
-    It extracts the error suppression factor Λ and the prefactor Λ₀,
-    along with their standard deviations.
+    It extracts the error suppression factor Λ and the prefactor Λ₀, along with their
+    standard deviations.
 
-    The leppr can be approximated as ``lep / num_rounds`` for small error rates,
-    or computed together with its standard deviation more accurately using
+    The leppr can be approximated as ``lep / num_rounds`` for small error rates, or
+    computed together with its standard deviation more accurately using
     :func:`compute_logical_error_per_round`.
 
-    By supplying leppr values at increasing code distances, this routine
-    estimates how quickly logical errors are suppressed as the code grows.
-    Note that Λ is a heuristic quantity: estimates may be unreliable near
-    threshold and for small distances. In such cases, a warning is emitted.
+    By supplying leppr values at increasing code distances, this routine estimates how
+    quickly logical errors are suppressed as the code grows. Note that Λ is a heuristic
+    quantity: estimates may be unreliable near threshold and for small distances. In
+    such cases, a warning is emitted.
 
     All three fitting methods show remarkable numerical agreement.
-    LambdaFitMethod.CURVE is slower than both LambdaFitMethod.SHIFTED and
-    LambdaFitMethod.LIN, the later two should be preferred in general.
+    ``LambdaFitMethod.CURVE`` is slower than both ``LambdaFitMethod.SHIFTED`` and
+    ``LambdaFitMethod.LIN``, the later two should be preferred in general.
 
     Reference:
-       Fig. S15 of Supplementary information of
-       "Quantum error correction below the surface code threshold"
-       at https://www.nature.com/articles/s41586-024-08449-y#Sec8
+        Fig. S15 of Supplementary information of
+        "Quantum error correction below the surface code threshold"
+        at https://www.nature.com/articles/s41586-024-08449-y#Sec8
 
     Args:
         distances: An array for code distances as leppr data points.
-        leppr: An array for leppr computed for all distances. Must be of same size as 'distances'.
-        leppr_std: An array for leppr standard deviation for each distance. Must be of same size as 'distances'.
+        leppr: An array for leppr computed for all distances. Must be of same size as
+            ``distances``.
+        leppr_std: An array for leppr standard deviation for each distance. Must be of
+            same size as ``distances``.
         method: Method used to fit the data. The default is "lin".
 
     Returns:
-        LambdaData: Container for Λ, Λ₀, their standard deviations, and the input data.
+        Container for Λ, Λ₀, their standard deviations, and the input data.
 
     Raises:
-        ValueError: When input data do not match sizes or when duplicated data is provided.
+        ValueError: When input data do not match sizes or when duplicated data is
+            provided.
 
     Notes:
         When Λ is very close to 1 (``abs(Λ - 1) < 1e-7``) and ``method == "curve"``,
@@ -473,6 +482,7 @@ def calculate_lambda_and_lambda_stddev(
         warnings.warn(
             "Lambda estimation is unreliable at low code distances and low values of "
             "lambda. Please use distance 5 as a minimum.",
+            stacklevel=2,
         )
     return lambda_fit
 

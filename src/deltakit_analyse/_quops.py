@@ -26,18 +26,15 @@ def _equal_or_less_brute_force_search(
     The function searches for smallest D from [min, max],
     with func(D) <= target.
 
-    Parameters
-    ----------
-        func (Callable): a descending function.
-        target (float): a value to search for.
-        minimum (int): minimum tested value of D.
-        maximum (int): maximum tested value of D.
-        step (int): next value to consider is D+step.
+    Args:
+        func: A descending function.
+        target: A value to search for.
+        minimum: Minimum tested value of D.
+        maximum: Maximum tested value of D.
+        step: Next value to consider is D + step.
 
-    Returns
-    -------
-        int | None:
-            a value, which safisfies the search, or None.
+    Returns:
+        A value satisfying the search, or None.
     """
     while minimum < maximum:
         value = func(minimum)
@@ -68,14 +65,13 @@ def predict_quops_at_distance(lambda0: float, lambda_: float, distance: int) -> 
     This uses the definition that the number of QuOps achievable is 1 / pL, where
     pL is the probability of a logical error occurring in distance-D, D-round block.
 
-    Parameters
-    ----------
-    lambda0 (float):
-        constant factor of lambda fit.
-    lambda_ (float):
-        Error suppression factor.
-    distance (int):
-        The distance at which to calculate the number of QuOps.
+    Args:
+        lambda0: Constant factor of the lambda fit.
+        lambda_: Error suppression factor.
+        distance: The distance at which to calculate the number of QuOps.
+
+    Returns:
+        The estimated number of QuOps.
     """
     if distance % 2 == 0:
         msg = (
@@ -143,23 +139,17 @@ def predict_distance_for_quops(
     occurring during a distance-D, D-round memory experiment
     without state preparation or measurement error.
 
-    Parameters
-    ----------
-    lambda0 (float):
-        constant factor of lambda fit.
-    lambda_ (float):
-        Error suppression factor.
-    num_quops (int):
-        Number of desired QuOps, must be a positive integer greater than 2.
-    max_distance (int):
-        maximum distance to consider. Default is 999.
+    Args:
+        lambda0: Constant factor of the lambda fit.
+        lambda_: Error suppression factor.
+        num_quops: Number of desired QuOps; must be at least 2.
+        max_distance: Maximum distance to consider. Defaults to 999.
 
-    Raises
-    ------
-    ValueError
-        - if solution is not found;
-        - num_quops < 2;
-        - lambda_ <= 1.0
+    Returns:
+        The nearest odd distance that achieves the desired number of QuOps.
+
+    Raises:
+        ValueError: If no solution is found, ``num_quops < 2``, or ``lambda_ <= 1``.
     """
 
     if num_quops < 2:

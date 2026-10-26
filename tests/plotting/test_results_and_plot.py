@@ -212,7 +212,9 @@ def _assert_axes_match(ax_actual, ax_expected):
     ]
 
     assert len(ax_actual.lines) == len(ax_expected.lines)
-    for actual_line, expected_line in zip(ax_actual.lines, ax_expected.lines):
+    for actual_line, expected_line in zip(
+        ax_actual.lines, ax_expected.lines, strict=True
+    ):
         np.testing.assert_allclose(actual_line.get_xdata(), expected_line.get_xdata())
         np.testing.assert_allclose(actual_line.get_ydata(), expected_line.get_ydata())
         assert actual_line.get_label() == expected_line.get_label()
@@ -220,12 +222,14 @@ def _assert_axes_match(ax_actual, ax_expected):
 
     assert len(ax_actual.collections) == len(ax_expected.collections)
     for actual_collection, expected_collection in zip(
-        ax_actual.collections, ax_expected.collections
+        ax_actual.collections, ax_expected.collections, strict=True
     ):
         actual_paths = actual_collection.get_paths()
         expected_paths = expected_collection.get_paths()
         assert len(actual_paths) == len(expected_paths)
-        for actual_path, expected_path in zip(actual_paths, expected_paths):
+        for actual_path, expected_path in zip(
+            actual_paths, expected_paths, strict=True
+        ):
             np.testing.assert_allclose(actual_path.vertices, expected_path.vertices)
 
 

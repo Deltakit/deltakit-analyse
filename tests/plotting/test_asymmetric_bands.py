@@ -138,7 +138,7 @@ class TestAsymmetricFitPipeline:
         assert result.lambda_interval.low > 0
 
     def test_lambda_asymmetric_length_mismatch_raises(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=r"Input data do not match lengths\."):
             calculate_lambda_asymmetric([3, 5], [0.1], [0.09], [0.11])
 
     def test_quops_interval_from_asymmetric_lambda(self):
@@ -157,5 +157,7 @@ class TestAsymmetricFitPipeline:
         symmetric = calculate_lambda_and_lambda_stddev(
             [3, 5, 7], [1e-2, 1e-3, 1e-4], [1e-3, 1e-4, 1e-5]
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="lambda_data must carry asymmetric bounds"
+        ):
             predict_quops_interval(symmetric, 11)
