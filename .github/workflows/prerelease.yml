@@ -107,7 +107,7 @@ jobs:
           git config --global --add safe.directory /__w/deltakit_analyse/deltakit_analyse
           COMMIT_HASH=$(git rev-parse --short HEAD)
           SECS_SINCE_EPOCH=$(date +%s)
-          uv run --no-sync python3 -m tools.set_pre_version -t "$SECS_SINCE_EPOCH" -c "$COMMIT_HASH"
+          uv run --no-sync python3 -m tools.set_pre_version -t "$SECS_SINCE_EPOCH"
 
       - name: Upload updated project
         uses: actions/upload-artifact@v7
