@@ -7,14 +7,11 @@ from deltakit_circuit._circuit import Circuit
 from deltakit_decode._mwpm_decoder import PyMatchingDecoder
 from deltakit_decode.analysis._matching_decoder_managers import StimDecoderManager
 
-from deltakit_explorer.analysis import (
+from deltakit_analyse import (
     calculate_lep_and_lep_stddev,
     simulate_different_round_numbers_for_lep_per_round_estimation,
 )
-from deltakit_explorer.analysis.error_budget._memory import (
-    MemoryGenerator,
-    get_rotated_surface_code_memory_circuit,
-)
+from deltakit_analyse.error_budget._memory import MemoryGenerator
 
 
 def compute_ideal_rounds_for_noise_model_and_distance(
@@ -23,12 +20,12 @@ def compute_ideal_rounds_for_noise_model_and_distance(
     distance: int,
     max_shots: int,
     batch_size: int,
+    memory_generator: MemoryGenerator,
     initial_round_number: int = 2,
     min_fails: int = 100,
     target_stddev: float = 1e-4,
     max_round_number: int = 1024,
     next_round_number_func: Callable[[int], int] = lambda x: 4 * x,
-    memory_generator: MemoryGenerator = get_rotated_surface_code_memory_circuit,
 ) -> list[int]:
     """Compute the ideal rounds to use to estimate the LEP per round.
 

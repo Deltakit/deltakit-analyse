@@ -8,17 +8,16 @@ from deltakit_circuit._circuit import Circuit
 from deltakit_decode.analysis import RunAllAnalysisEngine
 from uncertainties import ufloat
 
-from deltakit_explorer.analysis._binomial_fit import ConfidenceInterval
-from deltakit_explorer.analysis.error_budget._generation import (
+from deltakit_analyse._binomial_fit import ConfidenceInterval
+from deltakit_analyse.error_budget._generation import (
     generate_decoder_managers_for_lambda,
 )
-from deltakit_explorer.analysis.error_budget._memory import (
+from deltakit_analyse.error_budget._memory import (
     MemoryGenerator,
     PreComputedMemoryGenerator,
-    get_rotated_surface_code_memory_circuit,
 )
-from deltakit_explorer.analysis.error_budget._parameters import SamplingParameters
-from deltakit_explorer.analysis.error_budget._post_processing import (
+from deltakit_analyse.error_budget._parameters import SamplingParameters
+from deltakit_analyse.error_budget._post_processing import (
     _filter_non_close_noise_parameters,
     compute_lambda_and_stddev_from_results,
     compute_lambda_interval_from_results,
@@ -59,8 +58,8 @@ def _run_lambda_engine(
         point,
         noise_model,
         num_rounds_by_distances,
+        memory_generator,
         sampling_parameters.max_workers,
-        memory_generator=memory_generator,
         noise_parameter_names=noise_parameter_names,
     )
     engine = RunAllAnalysisEngine(
@@ -95,16 +94,15 @@ def inverse_lambda_at(
     noise_model: Callable[[Circuit, npt.NDArray[np.floating]], Circuit],
     noise_parameters: npt.NDArray[np.floating] | Sequence[float],
     num_rounds_by_distances: Mapping[int, Sequence[int]],
+    memory_generator: MemoryGenerator | Mapping[int, Mapping[int, Circuit]],
     sampling_parameters: SamplingParameters = SamplingParameters(),
-    memory_generator: MemoryGenerator
-    | Mapping[int, Mapping[int, Circuit]] = get_rotated_surface_code_memory_circuit,
 ) -> ConfidenceInterval:
     """Compute 1 / Λ.
 
     Warning:
         This is a helper function to compute 1 / Λ when you need a **single**
         evaluation.
-        For error budgeting, :func:`~deltakit_explorer.analysis.error_budget.get_error_budget`
+        For error budgeting, :func:`~deltakit_analyse.error_budget.get_error_budget`
         will be able to parallelise more efficiently, while also performing several
         checks and optimisations.
 
@@ -150,9 +148,8 @@ def inverse_lambda_interval_at(
     noise_model: Callable[[Circuit, npt.NDArray[np.floating]], Circuit],
     noise_parameters: npt.NDArray[np.floating] | Sequence[float],
     num_rounds_by_distances: Mapping[int, Sequence[int]],
+    memory_generator: MemoryGenerator | Mapping[int, Mapping[int, Circuit]],
     sampling_parameters: SamplingParameters = SamplingParameters(),
-    memory_generator: MemoryGenerator
-    | Mapping[int, Mapping[int, Circuit]] = get_rotated_surface_code_memory_circuit,
 ) -> ConfidenceInterval:
     """Compute 1 / Λ with an asymmetric confidence interval.
 

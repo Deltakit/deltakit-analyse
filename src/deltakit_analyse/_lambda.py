@@ -14,8 +14,8 @@ from uncertainties import correlated_values
 from uncertainties.umath import exp as uexp
 from uncertainties.umath import log as ulog
 
-from deltakit_explorer.analysis._binomial_fit import ConfidenceInterval
-from deltakit_explorer.analysis._estimate import Estimate
+from deltakit_analyse._binomial_fit import ConfidenceInterval
+from deltakit_analyse._estimate import Estimate
 
 
 def lambda_from_shifted_fit(

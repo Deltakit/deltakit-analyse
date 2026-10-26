@@ -9,8 +9,8 @@ References
 
 from collections.abc import Callable
 
-from deltakit_explorer.analysis._binomial_fit import ConfidenceInterval
-from deltakit_explorer.analysis._lambda import LambdaData
+from deltakit_analyse._binomial_fit import ConfidenceInterval
+from deltakit_analyse._lambda import LambdaData
 
 
 def _equal_or_less_brute_force_search(

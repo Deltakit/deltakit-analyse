@@ -5,7 +5,7 @@ mpl.use("Agg")
 import numpy as np
 import pytest
 
-from deltakit_explorer.analysis import (
+from deltakit_analyse import (
     calculate_lambda_and_lambda_stddev,
     calculate_lambda_asymmetric,
     calculate_lep_and_lep_stddev,
@@ -14,7 +14,7 @@ from deltakit_explorer.analysis import (
     predict_quops_at_distance,
     predict_quops_interval,
 )
-from deltakit_explorer.plotting import (
+from deltakit_analyse.plotting import (
     interpolate_lambda,
     interpolate_leppr,
     plot_lambda,

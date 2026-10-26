@@ -6,15 +6,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from deltakit_explorer.plotting._lambda import plot_lambda
-from deltakit_explorer.plotting._leppr import plot_leppr
-from deltakit_explorer.plotting.plotting import plot
-from deltakit_explorer.plotting.results import (
+from deltakit_analyse.plotting._lambda import plot_lambda
+from deltakit_analyse.plotting._leppr import plot_leppr
+from deltakit_analyse.plotting.plotting import plot
+from deltakit_analyse.plotting.results import (
     LambdaResult,
     interpolate_lambda,
     interpolate_leppr,
 )
-from deltakit_explorer.plotting.results import (
+from deltakit_analyse.plotting.results import (
     LogicalErrorProbabilityPerRoundResult as LEPPRResult,
 )
 
@@ -115,11 +115,11 @@ class TestPlot:
             return fig, ax
 
         monkeypatch.setattr(
-            "deltakit_explorer.plotting.plotting.interpolate_lambda",
+            "deltakit_analyse.plotting.plotting.interpolate_lambda",
             fake_interpolate_lambda,
         )
         monkeypatch.setattr(
-            "deltakit_explorer.plotting.plotting.plot_lambda", fake_plot_lambda
+            "deltakit_analyse.plotting.plotting.plot_lambda", fake_plot_lambda
         )
 
         returned_fig, returned_ax = plot(
@@ -161,11 +161,11 @@ class TestPlot:
             return fig, ax
 
         monkeypatch.setattr(
-            "deltakit_explorer.plotting.plotting.interpolate_leppr",
+            "deltakit_analyse.plotting.plotting.interpolate_leppr",
             fake_interpolate_leppr,
         )
         monkeypatch.setattr(
-            "deltakit_explorer.plotting.plotting.plot_leppr", fake_plot_leppr
+            "deltakit_analyse.plotting.plotting.plot_leppr", fake_plot_leppr
         )
 
         returned_fig, returned_ax = plot(

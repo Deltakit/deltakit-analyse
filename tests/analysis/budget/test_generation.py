@@ -5,17 +5,31 @@ import numpy.typing as npt
 import pytest
 from deltakit_circuit import Circuit
 from deltakit_circuit._noise_factory import NoiseProfile
+from deltakit_circuit.gates import PauliBasis
 from deltakit_circuit.noise_channels._depolarising_noise import Depolarise1
+from deltakit_explorer.codes import RotatedPlanarCode, css_code_memory_circuit
+from deltakit_explorer.qpu._noise._noise_parameters import NoiseParameters
+from deltakit_explorer.qpu._qpu import QPU
 
-from deltakit_explorer.analysis.error_budget._generation import (
+from deltakit_analyse.error_budget._generation import (
     _generate_surface_code_memory_decoder_manager,
     generate_decoder_managers_for_lambda,
 )
-from deltakit_explorer.analysis.error_budget._memory import (
-    get_rotated_surface_code_memory_circuit,
-)
-from deltakit_explorer.qpu._noise._noise_parameters import NoiseParameters
-from deltakit_explorer.qpu._qpu import QPU
+
+
+def _get_rotated_surface_code_memory_circuit(distance: int, num_rounds: int) -> Circuit:
+    """Returns a rotated surface code Z memory experiment.
+
+    Args:
+        distance: distance of the rotated surface code.
+        num_rounds: number of stabiliser measurement rounds of the memory experiment.
+
+    Returns:
+        the noiseless Z-basis memory experiment circuit.
+    """
+    return css_code_memory_circuit(
+        RotatedPlanarCode(distance, distance), num_rounds, PauliBasis.Z
+    )
 
 
 def noise_model(computation: Circuit, parameters: npt.NDArray[np.floating]) -> Circuit:
@@ -36,7 +50,7 @@ def test_decoder_manager_has_metadata() -> None:
         3,
         noise_model,
         parameters,
-        get_rotated_surface_code_memory_circuit,
+        _get_rotated_surface_code_memory_circuit,
         parameter_names,
     )
     assert dm is not None
@@ -63,7 +77,11 @@ class TestGenerateDecoderManagerForLambda:
         m, n = xis.shape
         parameter_names = [f"param{i}" for i in range(m)]
         dms = generate_decoder_managers_for_lambda(
-            xis, noise_model, {3: [6], 5: [6]}, noise_parameter_names=parameter_names
+            xis,
+            noise_model,
+            {3: [6], 5: [6]},
+            _get_rotated_surface_code_memory_circuit,
+            noise_parameter_names=parameter_names,
         )
         assert len(dms) == 2 * n
         for dm in dms:

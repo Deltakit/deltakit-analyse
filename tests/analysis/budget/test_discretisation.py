@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from deltakit_explorer.analysis.error_budget._discretisation import (
+from deltakit_analyse.error_budget._discretisation import (
     DiscretisationStrategy,
     GradientFitDiscretisationGenerator,
     get_c_optimal_points,

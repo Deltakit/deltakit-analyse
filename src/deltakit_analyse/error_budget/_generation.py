@@ -10,10 +10,7 @@ from deltakit_decode._mwpm_decoder import PyMatchingDecoder
 from deltakit_decode.analysis._matching_decoder_managers import StimDecoderManager
 from tqdm import tqdm
 
-from deltakit_explorer.analysis.error_budget._memory import (
-    MemoryGenerator,
-    get_rotated_surface_code_memory_circuit,
-)
+from deltakit_analyse.error_budget._memory import MemoryGenerator
 
 
 def _generate_surface_code_memory_decoder_manager(
@@ -77,8 +74,8 @@ def generate_decoder_managers_for_lambda(
     xi: npt.NDArray[np.floating],
     noise_model: Callable[[Circuit, npt.NDArray[np.floating]], Circuit],
     num_rounds_by_distances: Mapping[int, Sequence[int]],
+    memory_generator: MemoryGenerator,
     max_workers: int = 1,
-    memory_generator: MemoryGenerator = get_rotated_surface_code_memory_circuit,
     noise_parameter_names: Sequence[str] | None = None,
 ) -> list[StimDecoderManager]:
     """Generate several decoder managers from the provided arguments for a rotated

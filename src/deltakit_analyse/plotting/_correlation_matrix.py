@@ -11,13 +11,10 @@ import numpy as np
 import numpy.typing as npt
 from matplotlib.ticker import FuncFormatter
 
-from deltakit_explorer.types._types import QubitCoordinateToDetectorMapping
-
 
 def correlation_matrix(
     matrix: npt.NDArray[np.floating] | Sequence[Sequence[float]],
-    qubit_to_detector_mapping: QubitCoordinateToDetectorMapping
-    | dict[tuple[float, ...], list[int]],
+    qubit_to_detector_mapping: dict[tuple[float, ...], list[int]],
     labels: Sequence[str] = (),
 ):
     """Plot a given correlation matrix as a heatmap.
@@ -57,10 +54,6 @@ def correlation_matrix(
     except ImportError as ie:
         msg = "Seaborn is not installed - please install Visualisation extras"
         raise ImportError(msg) from ie
-
-    # Harmonise the inputs
-    if isinstance(qubit_to_detector_mapping, QubitCoordinateToDetectorMapping):
-        qubit_to_detector_mapping = qubit_to_detector_mapping.detector_map
 
     matrix = np.asarray(matrix)
 

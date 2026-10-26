@@ -7,8 +7,8 @@ from deltakit_core.plotting.colours import RIVERLANE_PLOT_COLOURS
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from deltakit_explorer.plotting._utils import get_figure_and_axes
-from deltakit_explorer.plotting.results import LambdaResult
+from deltakit_analyse.plotting._utils import get_figure_and_axes
+from deltakit_analyse.plotting.results import LambdaResult
 
 
 def plot_lambda(
@@ -21,9 +21,9 @@ def plot_lambda(
     """Plot an interpolated Lambda result.
 
     This specialised plotter owns only the Lambda-specific rendering logic. It
-    expects a ready-to-plot :class:`~deltakit_explorer.plotting.results.LambdaResult`.
+    expects a ready-to-plot :class:`~deltakit_analyse.plotting.results.LambdaResult`.
     Higher-level data preparation, such as interpolation from raw Lambda data,
-    should be handled by :func:`deltakit_explorer.plotting.plot` before dispatch.
+    should be handled by :func:`deltakit_analyse.plotting.plot` before dispatch.
 
     Args:
         lambda_result: Interpolated Lambda result to plot.
@@ -41,7 +41,7 @@ def plot_lambda(
 
         Plotting an interpolated Lambda result::
 
-            from deltakit_explorer.plotting import interpolate_lambda, plot_lambda
+            from deltakit_analyse.plotting import interpolate_lambda, plot_lambda
 
             lambda_result = interpolate_lambda(lambda_data)
             fig, ax = plot_lambda(lambda_result)

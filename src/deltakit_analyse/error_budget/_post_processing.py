@@ -6,7 +6,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from deltakit_explorer.analysis import (
+from deltakit_analyse import (
     LambdaData,
     calculate_lambda_and_lambda_stddev,
     calculate_lambda_asymmetric,
@@ -14,7 +14,7 @@ from deltakit_explorer.analysis import (
     compute_logical_error_per_round,
     fit_logical_error_per_round_asymmetric,
 )
-from deltakit_explorer.analysis import (
+from deltakit_analyse import (
     LogicalErrorProbabilityPerRoundData as LEPPRData,
 )
 

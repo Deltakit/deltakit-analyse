@@ -6,11 +6,11 @@ from __future__ import annotations
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from deltakit_explorer.analysis import LambdaData
-from deltakit_explorer.analysis import LogicalErrorProbabilityPerRoundData as LEPPRData
-from deltakit_explorer.plotting._lambda import plot_lambda
-from deltakit_explorer.plotting._leppr import plot_leppr
-from deltakit_explorer.plotting.results import interpolate_lambda, interpolate_leppr
+from deltakit_analyse import LambdaData
+from deltakit_analyse import LogicalErrorProbabilityPerRoundData as LEPPRData
+from deltakit_analyse.plotting._lambda import plot_lambda
+from deltakit_analyse.plotting._leppr import plot_leppr
+from deltakit_analyse.plotting.results import interpolate_lambda, interpolate_leppr
 
 
 def plot(

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
 
-from deltakit_explorer.analysis.error_budget._discretisation import (
+from deltakit_analyse.error_budget._discretisation import (
     DiscretisationStrategy,
 )
 

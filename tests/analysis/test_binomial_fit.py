@@ -3,14 +3,14 @@ import math
 import numpy as np
 import pytest
 
-from deltakit_explorer.analysis import (
+from deltakit_analyse import (
     ConfidenceInterval,
     calculate_lep_asymmetric,
     fit_binomial,
     fit_binomial_batch,
     fit_leppr_and_spam,
 )
-from deltakit_explorer.analysis._binomial_fit import log_binomial
+from deltakit_analyse._binomial_fit import log_binomial
 
 
 def _model_counts(

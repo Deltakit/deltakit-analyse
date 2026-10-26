@@ -1,11 +1,11 @@
 import itertools
 from math import floor
-from typing import Literal
 
 import numpy as np
 import pytest
 
-from deltakit_explorer.analysis import calculate_lambda_and_lambda_stddev
+from deltakit_analyse import calculate_lambda_and_lambda_stddev
+from deltakit_analyse._lambda import LambdaFitMethod
 
 
 @pytest.fixture
@@ -44,7 +44,7 @@ class TestCalculateLambda:
         ("method", "distances", "lambda_", "lambda0", "relative_std"),
         list(
             itertools.product(
-                ("shifted", "lin", "curve"),
+                tuple(LambdaFitMethod),
                 ((5, 7, 9), (5, 6, 7, 8, 9), tuple(range(5, 50, 6))),
                 (0.7, 0.9, 1 - 1e-7, 1, 1 + 1e-7, 1.1, 1.5, 2, 10, 20),
                 (0.01, 0.1, 1 - 1e-7, 1, 1 + 1e-7, 2, 10, 100),
@@ -54,7 +54,7 @@ class TestCalculateLambda:
     )
     def test_synthetic_values(
         self,
-        method: Literal["shifted", "lin", "curve"],
+        method: LambdaFitMethod,
         distances: tuple[int, ...],
         lambda_: float,
         lambda0: float,
@@ -104,7 +104,7 @@ class TestCalculateLambda:
         ("methods", "distances", "lambda_", "lambda0", "relative_std"),
         list(
             itertools.product(
-                itertools.combinations(["shifted", "lin", "curve"], 2),
+                itertools.combinations(tuple(LambdaFitMethod), 2),
                 ((5, 7, 9), (5, 9, 13)),
                 (0.7, 0.9, 1 - 1e-7, 1, 1 + 1e-7, 1.1, 1.5, 2, 10, 20),
                 (0.01, 0.1, 1 - 1e-7, 1, 1 + 1e-7, 2, 10, 100),
@@ -114,9 +114,7 @@ class TestCalculateLambda:
     )
     def test_different_methods_agree(
         self,
-        methods: tuple[
-            Literal["shifted", "lin", "curve"], Literal["shifted", "lin", "curve"]
-        ],
+        methods: tuple[LambdaFitMethod, LambdaFitMethod],
         distances: tuple[int, ...],
         lambda_: float,
         lambda0: float,

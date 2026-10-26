@@ -6,7 +6,7 @@ from typing import NamedTuple
 
 import pytest
 
-from deltakit_explorer.analysis import (
+from deltakit_analyse import (
     predict_distance_for_quops,
     predict_quops_at_distance,
 )

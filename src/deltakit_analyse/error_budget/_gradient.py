@@ -8,21 +8,20 @@ from deltakit_circuit._circuit import Circuit
 from deltakit_decode.analysis._run_all_analysis_engine import RunAllAnalysisEngine
 from uncertainties import correlated_values
 
-from deltakit_explorer.analysis._estimate import Estimate
-from deltakit_explorer.analysis.error_budget._generation import (
+from deltakit_analyse._estimate import Estimate
+from deltakit_analyse.error_budget._generation import (
     generate_decoder_managers_for_lambda,
 )
-from deltakit_explorer.analysis.error_budget._lambda import reciprocal_stddev
-from deltakit_explorer.analysis.error_budget._memory import (
+from deltakit_analyse.error_budget._lambda import reciprocal_stddev
+from deltakit_analyse.error_budget._memory import (
     MemoryGenerator,
     PreComputedMemoryGenerator,
-    get_rotated_surface_code_memory_circuit,
 )
-from deltakit_explorer.analysis.error_budget._parameters import (
+from deltakit_analyse.error_budget._parameters import (
     FittingParameters,
     SamplingParameters,
 )
-from deltakit_explorer.analysis.error_budget._post_processing import (
+from deltakit_analyse.error_budget._post_processing import (
     compute_lambda_and_stddev_from_results,
 )
 
@@ -186,9 +185,9 @@ def get_decoding_result(
     sweep_noise_parameters: npt.NDArray[np.floating],
     noise_parameter_names: list[str],
     num_rounds_by_distances: Mapping[int, Sequence[int]],
+    memory_generator: MemoryGenerator,
     fitting_parameters: FittingParameters = FittingParameters(),
     sampling_parameters: SamplingParameters = SamplingParameters(),
-    memory_generator: MemoryGenerator = get_rotated_surface_code_memory_circuit,
 ) -> pd.DataFrame:
     """Construct, sample and decode the experiments represented by the input parameters
     and returns statistics on the success rate of each experiment.
@@ -223,8 +222,8 @@ def get_decoding_result(
         sweep_noise_parameters,
         noise_model,
         num_rounds_by_distances,
+        memory_generator,
         sampling_parameters.max_workers,
-        memory_generator=memory_generator,
         noise_parameter_names=noise_parameter_names,
     )
 
@@ -314,11 +313,9 @@ def inverse_lambda_gradient_at(
     noise_parameters: npt.NDArray[np.floating] | Sequence[float],
     num_rounds_by_distances: Mapping[int, Sequence[int]],
     noise_parameters_exploration_bounds: list[tuple[float, float]],
+    memory_generator: (MemoryGenerator | Mapping[int, Mapping[int, Circuit]]),
     fitting_parameters: FittingParameters = FittingParameters(),
     sampling_parameters: SamplingParameters = SamplingParameters(),
-    memory_generator: (
-        MemoryGenerator | Mapping[int, Mapping[int, Circuit]]
-    ) = get_rotated_surface_code_memory_circuit,
 ) -> tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
     """The gradient of 1 / Λ at the provided ``noise_model_parameters``.
 
@@ -383,9 +380,9 @@ def inverse_lambda_gradient_at(
         sweep_noise_parameters,
         noise_parameter_names,
         num_rounds_by_distances,
+        memory_generator,
         fitting_parameters,
         sampling_parameters,
-        memory_generator,
     )
     # Compute the gradient of Λ from the sampling results.
     return get_lambda_gradient(
