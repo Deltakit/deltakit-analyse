@@ -16,6 +16,7 @@ from uncertainties.umath import log as ulog  # type: ignore[attr-defined]
 
 from deltakit_analyse._binomial_fit import ConfidenceInterval
 from deltakit_analyse._estimate import Estimate
+from deltakit_analyse.numerics.models import logical_error_probability_per_round
 
 
 def lambda_from_shifted_fit(
@@ -359,15 +360,17 @@ def _lambda_curve_fit(
         LambdaData: A container for error suppression parameters.
     """
     (lamb0, lamb), cov = scipy.optimize.curve_fit(
-        lambda x, lamb0, lamb: 1 / lamb0 * lamb ** (-x),
-        (distances + 1) / 2,
+        lambda x, lamb0, lamb: logical_error_probability_per_round(
+            x, lamb, amplitude=1 / lamb0
+        ),
+        distances,
         leppr,
         sigma=leppr_std,
         absolute_sigma=True,
         jac=lambda x, lamb0, lamb: np.transpose(
             [
-                -1 / lamb0**2 * lamb ** (-x),
-                -1 / lamb0 * x * lamb ** (-x - 1),
+                -1 / lamb0**2 * lamb ** (-(x + 1) / 2),
+                -1 / lamb0 * (x + 1) / 2 * lamb ** (-(x + 1) / 2 - 1),
             ]
         ),
         bounds=(0, np.inf),  # Ensure convergence in pathological cases.

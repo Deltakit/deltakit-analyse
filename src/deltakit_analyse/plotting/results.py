@@ -8,80 +8,14 @@ from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
 
-from deltakit_analyse import LambdaData
-from deltakit_analyse import (
+from deltakit_analyse._lambda import LambdaData
+from deltakit_analyse._leppr import (
     LogicalErrorProbabilityPerRoundData as LEPPRData,
 )
-
-
-def _lambda_interpolated(
-    lambda0: float | npt.NDArray[np.floating],
-    lambda_: float | npt.NDArray[np.floating],
-    distances: npt.NDArray[np.int_],
-) -> npt.NDArray[np.floating]:
-    """Interpolate the logical error probability per round for the given parameters.
-
-    The interpolation is based on the formula
-
-        ε = (1 / Λ₀) * Λ**(-(d + 1) / 2)
-
-    where:
-      - ε is the logical error probability per round,
-      - Λ₀ is a normalisation constant,
-      - Λ is the error suppression factor,
-      - d is the code distance.
-
-    For each distance, this function computes the corresponding
-    logical error probability using the supplied Λ and Λ₀.
-
-    Args:
-        lambda0: Normalisation constant Λ₀.
-        lambda_: Error suppression factor Λ.
-        distances: Iterable of code distances d.
-
-    Returns:
-        An array containing the estimated logical error probability per round
-        for each provided distance.
-    """
-    return lambda_ ** (-(distances + 1) / 2) / lambda0
-
-
-def _lep_interpolated(
-    spam: float | npt.NDArray[np.floating],
-    leppr: float | npt.NDArray[np.floating],
-    rounds_interpolated: npt.NDArray[np.floating],
-) -> npt.NDArray[np.floating]:
-    """Compute the logical error probability for the given parameters.
-
-    The expected computation fidelity is modelled as
-
-        F = Fs * Fε**r
-
-    where:
-      - F is the overall fidelity of the computation,
-      - Fs is the fidelity of SPAM-related operations,
-       Fε is the fidelity of a single quantum error-correction round,
-      - r is the number of error-correction rounds performed.
-
-    Each fidelity value is derived from its associated error probability using
-
-        f = 1 - 2e
-
-    where:
-      - f represents F, Fs, or Fε,
-      - e represents the corresponding logical error probability
-        (overall, SPAM-related, or per-round).
-
-    Args:
-        spam: Error probability associated with SPAM operations.
-        leppr: Error probability per error-correction round.
-        rounds_interpolated: Number of error-correction rounds performed.
-
-    Returns:
-        Logical error probability of the full computation.
-    """
-    expected_fidelity = (1 - 2 * spam) * (1 - 2 * leppr) ** rounds_interpolated
-    return (1 - expected_fidelity) / 2
+from deltakit_analyse.numerics.models import (
+    logical_error_probability_per_round,
+    memory_logical_error_probability,
+)
 
 
 def _error_rate_band(
@@ -273,14 +207,14 @@ def interpolate_lambda(
 
     # The error probability decreases with both Λ and Λ₀, so the largest factors
     # give the lower boundary of the band and the smallest give the upper one.
-    interpolated = _lambda_interpolated(
-        lambda_data.lambda0, lambda_data.lambda_, distances_interpolated
+    interpolated = logical_error_probability_per_round(
+        distances_interpolated, lambda_data.lambda_, amplitude=1 / lambda_data.lambda0
     ).ravel()
-    lower_boundary = _lambda_interpolated(
-        lambda0_high, lambda_high, distances_interpolated
+    lower_boundary = logical_error_probability_per_round(
+        distances_interpolated, lambda_high, amplitude=1 / lambda0_high
     ).ravel()
-    upper_boundary = _lambda_interpolated(
-        lambda0_low, lambda_low, distances_interpolated
+    upper_boundary = logical_error_probability_per_round(
+        distances_interpolated, lambda_low, amplitude=1 / lambda0_low
     ).ravel()
 
     fit_label = (
@@ -369,8 +303,10 @@ def interpolate_leppr(
     spam_vals = np.array([spam_low, leppr_data.spam_error, spam_high]).reshape(3, 1)
     leppr_vals = np.array([leppr_low, leppr_data.leppr, leppr_high]).reshape(3, 1)
 
-    lower_boundary, interpolated, upper_boundary = _lep_interpolated(
-        spam_vals, leppr_vals, rounds_interpolated
+    lower_boundary, interpolated, upper_boundary = memory_logical_error_probability(
+        rounds_interpolated,
+        np.clip(leppr_vals, 0, 0.5),
+        spam_error=np.clip(spam_vals, 0, 0.5),
     )
 
     fit_label = (

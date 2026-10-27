@@ -1,7 +1,7 @@
 # (c) Copyright Riverlane 2020-2026. All rights reserved.
 from __future__ import annotations
 
-from math import exp, log
+from math import comb, exp, log
 from typing import NamedTuple
 
 import numpy as np
@@ -37,7 +37,13 @@ def test_predict_quops_at_distance_method(
     expected_lep_per_round = alternative_lep_per_round(
         default_parameters.lambda0, default_parameters.lambda_, distance
     )
-    expected_lep = 0.5 * (1 - pow(1 - 2 * expected_lep_per_round, distance))
+    # Using a different formula to compute the expected result.
+    expected_lep = sum(
+        comb(distance, num_errors)
+        * expected_lep_per_round**num_errors
+        * (1 - expected_lep_per_round) ** (distance - num_errors)
+        for num_errors in range(1, distance + 1, 2)
+    )
     prediction = predict_quops_at_distance(*default_parameters, distance)
     assert pytest.approx(1 / expected_lep) == prediction
 
@@ -124,3 +130,22 @@ def test_quops_interval_uses_fitted_denominator_prefactor():
         per_round = suppression ** (-(distance + 1) / 2) / denominator
         expected = 2 / (1 - (1 - 2 * per_round) ** distance)
         assert actual == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(("maximum", "target"), [(1, 1000), (7, 2200)])
+def test_distance_search_includes_its_maximum(maximum, target):
+    assert predict_distance_for_quops(0.001, 2, target, max_distance=maximum) == maximum
+
+
+@pytest.mark.parametrize("distance", [0, -1, 1.5, True])
+def test_quops_rejects_invalid_distances(distance):
+    with pytest.raises(ValueError, match="positive odd integer"):
+        predict_quops_at_distance(0.001, 2, distance)
+
+
+def test_quops_remains_finite_at_tiny_error_rates():
+    assert predict_quops_at_distance(1e-20, 2, 1) == pytest.approx(2e20)
+
+
+def test_quops_is_unbounded_for_zero_error_probability():
+    assert predict_quops_at_distance(0, 2, 1) == float("inf")

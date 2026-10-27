@@ -25,6 +25,8 @@ import numpy as np
 import numpy.typing as npt
 from scipy import optimize
 
+from deltakit_analyse.numerics.models import memory_logical_error_probability
+
 #: Default Bayes factor used to define the confidence interval. Hypotheses whose
 #: likelihood is more than this many times less likely than the best fit are
 #: excluded. A factor of 1000 corresponds to roughly a 99% interval.
@@ -203,12 +205,6 @@ _RATE_FLOOR = 1e-12
 _RATE_CEIL = 0.5 - 1e-9
 
 
-def _model_lep(
-    rounds: npt.NDArray[np.float64], eps: float, spam: float
-) -> npt.NDArray[np.float64]:
-    return (1 - (1 - 2 * spam) * (1 - 2 * eps) ** rounds) / 2
-
-
 def _total_neg_log_likelihood(
     eps: float,
     spam: float,
@@ -218,8 +214,8 @@ def _total_neg_log_likelihood(
 ) -> float:
     # The binomial "success" event here is a *logical failure*, so the per-point
     # success count is the number of logical failures ``num_fails`` and ``p`` is
-    # the modelled logical error probability ``_model_lep``.
-    model = _model_lep(rounds, eps, spam)
+    # the modelled logical error probability.
+    model = memory_logical_error_probability(rounds, eps, spam_error=spam)
     return -sum(
         log_binomial(p=float(p), num_trials=int(n), num_successes=int(k))
         for p, n, k in zip(model, shots, num_fails, strict=True)

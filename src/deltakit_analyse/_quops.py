@@ -8,9 +8,14 @@ References
 """
 
 from collections.abc import Callable
+from numbers import Integral
 
 from deltakit_analyse._binomial_fit import ConfidenceInterval
 from deltakit_analyse._lambda import LambdaData
+from deltakit_analyse.numerics.models import (
+    logical_error_probability_per_round,
+    memory_logical_error_probability,
+)
 
 
 def _equal_or_less_brute_force_search(
@@ -36,7 +41,7 @@ def _equal_or_less_brute_force_search(
     Returns:
         A value satisfying the search, or None.
     """
-    while minimum < maximum:
+    while minimum <= maximum:
         value = func(minimum)
         if value <= target:
             return minimum
@@ -54,9 +59,10 @@ def _calculate_lep(
     https://doi.org/10.48550/arXiv.2408.13687 which is the sum of the probabilities
     of all ways of there being an odd number of errors in fixed number of rounds.
     """
-    lep_per_round = lambda0 * lambda_ ** (-(distance + 1) / 2)
-    # At `lep_per_round` << 1 this is be approximated as `lep_per_round * num_rounds`
-    return 0.5 * (1 - (1 - 2 * lep_per_round) ** num_rounds)
+    lep_per_round = logical_error_probability_per_round(
+        distance, lambda_, amplitude=lambda0
+    )
+    return float(memory_logical_error_probability(num_rounds, lep_per_round))
 
 
 def predict_quops_at_distance(lambda0: float, lambda_: float, distance: int) -> float:
@@ -72,15 +78,22 @@ def predict_quops_at_distance(lambda0: float, lambda_: float, distance: int) -> 
         distance: The distance at which to calculate the number of QuOps.
 
     Returns:
-        The estimated number of QuOps.
+        The estimated number of QuOps, or infinity when the modelled error
+        probability is zero or underflows to zero.
     """
-    if distance % 2 == 0:
+    if (
+        not isinstance(distance, Integral)
+        or isinstance(distance, bool)
+        or distance <= 0
+        or distance % 2 == 0
+    ):
         msg = (
-            "This method gives correct estimation only at odd distances. "
+            "This method requires a positive odd integer distance. "
             f"Distance provided: {distance}"
         )
         raise ValueError(msg)
-    return 1.0 / _calculate_lep(lambda0, lambda_, distance, distance)
+    probability = _calculate_lep(lambda0, lambda_, distance, distance)
+    return float("inf") if probability == 0 else 1.0 / probability
 
 
 def predict_quops_interval(
