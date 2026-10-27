@@ -49,22 +49,6 @@ def _equal_or_less_brute_force_search(
     return None
 
 
-def _calculate_lep(
-    lambda0: float, lambda_: float, distance: int, num_rounds: int
-) -> float:
-    """Returns the probability of observing a logical error on a code of fixed
-    distance after a number of rounds.
-
-    It uses the formula in Section VI.B of Supplementary Information in
-    https://doi.org/10.48550/arXiv.2408.13687 which is the sum of the probabilities
-    of all ways of there being an odd number of errors in fixed number of rounds.
-    """
-    lep_per_round = logical_error_probability_per_round(
-        distance, lambda_, amplitude=lambda0
-    )
-    return float(memory_logical_error_probability(num_rounds, lep_per_round))
-
-
 def predict_quops_at_distance(lambda0: float, lambda_: float, distance: int) -> float:
     """Returns the number of QuOps, given distance.
 
@@ -92,7 +76,10 @@ def predict_quops_at_distance(lambda0: float, lambda_: float, distance: int) -> 
             f"Distance provided: {distance}"
         )
         raise ValueError(msg)
-    probability = _calculate_lep(lambda0, lambda_, distance, distance)
+    lep_per_round = logical_error_probability_per_round(
+        distance, lambda_, amplitude=lambda0
+    )
+    probability = float(memory_logical_error_probability(distance, lep_per_round))
     return float("inf") if probability == 0 else 1.0 / probability
 
 
@@ -158,6 +145,9 @@ def predict_distance_for_quops(
     occurring during a distance-D, D-round memory experiment
     without state preparation or measurement error.
 
+    Candidate distances whose extrapolated per-round error exceeds 0.5 are
+    skipped because they are outside the memory model's physical domain.
+
     Args:
         lambda0: Legacy multiplicative amplitude, equal to ``1 / result.lambda0``
             for a fitted ``LambdaData`` denominator.
@@ -180,9 +170,31 @@ def predict_distance_for_quops(
         msg = "Lambda should be greater than 1 to ensure error suppression"
         raise ValueError(msg)
 
+    def lep_at_distance(candidate_distance: int) -> float:
+        """Evaluate LEP without aborting on unphysical search candidates.
+
+        Small distances can yield LEPPR above ``0.5`` even when larger distances are
+        valid. Return infinity for those candidates so they cannot meet the target and
+        the search continues.
+
+        Args:
+            candidate_distance: Code distance and number of rounds to evaluate.
+
+        Returns:
+            LEP for ``candidate_distance``, or infinity if the LEPPR exceeds ``0.5``.
+        """
+        lep_per_round = logical_error_probability_per_round(
+            candidate_distance, lambda_, amplitude=lambda0
+        )
+        if lep_per_round > 0.5:
+            return float("inf")
+        return float(
+            memory_logical_error_probability(candidate_distance, lep_per_round)
+        )
+
     required_lep = 1.0 / num_quops
     distance = _equal_or_less_brute_force_search(
-        lambda x: _calculate_lep(lambda0, lambda_, x, x),
+        lep_at_distance,
         required_lep,
         minimum=1,
         maximum=max_distance,

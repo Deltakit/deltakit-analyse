@@ -149,3 +149,22 @@ def test_quops_remains_finite_at_tiny_error_rates():
 
 def test_quops_is_unbounded_for_zero_error_probability():
     assert predict_quops_at_distance(0, 2, 1) == float("inf")
+
+
+def test_distance_search_skips_unphysical_per_round_rates():
+    assert predict_distance_for_quops(2, 3, 10, max_distance=9) == 9
+
+
+def test_direct_quops_rejects_unphysical_per_round_rate():
+    with pytest.raises(ValueError, match="per_round_error"):
+        predict_quops_at_distance(2, 3, 1)
+
+
+@pytest.mark.parametrize("maximum", [1, 7])
+def test_distance_search_reports_no_solution_after_skipping_invalid_rates(maximum):
+    with pytest.raises(ValueError, match="Could not find a solution"):
+        predict_distance_for_quops(2, 3, 10, max_distance=maximum)
+
+
+def test_distance_search_accepts_per_round_rate_at_physical_boundary():
+    assert predict_distance_for_quops(1, 2, 2, max_distance=1) == 1
