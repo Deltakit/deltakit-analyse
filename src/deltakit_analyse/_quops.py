@@ -66,7 +66,8 @@ def predict_quops_at_distance(lambda0: float, lambda_: float, distance: int) -> 
     pL is the probability of a logical error occurring in distance-D, D-round block.
 
     Args:
-        lambda0: Constant factor of the lambda fit.
+        lambda0: Legacy multiplicative amplitude. For a fitted ``LambdaData``,
+            pass ``1 / result.lambda0``, not its denominator directly.
         lambda_: Error suppression factor.
         distance: The distance at which to calculate the number of QuOps.
 
@@ -92,8 +93,7 @@ def predict_quops_interval(
     block (see :func:`predict_quops_at_distance`). This propagates the asymmetric
     bounds on Λ and Λ₀ from an asymmetric Lambda fit (see
     :func:`calculate_lambda_asymmetric`) into that estimate. The number of QuOps
-    grows with Λ and shrinks with Λ₀, so the widest QuOps comes from the largest Λ
-    together with the smallest Λ₀.
+    grows with both Λ and the fitted denominator Λ₀.
 
     Args:
         lambda_data: A fit carrying the asymmetric ``lambda_interval`` and
@@ -115,12 +115,18 @@ def predict_quops_interval(
     # has_asymmetric_bounds guarantees both intervals are set.
     assert lambda_data.lambda_interval is not None
     assert lambda_data.lambda0_interval is not None
-    best = predict_quops_at_distance(lambda_data.lambda0, lambda_data.lambda_, distance)
+    best = predict_quops_at_distance(
+        1 / lambda_data.lambda0, lambda_data.lambda_, distance
+    )
     low = predict_quops_at_distance(
-        lambda_data.lambda0_interval.high, lambda_data.lambda_interval.low, distance
+        1 / lambda_data.lambda0_interval.low,
+        lambda_data.lambda_interval.low,
+        distance,
     )
     high = predict_quops_at_distance(
-        lambda_data.lambda0_interval.low, lambda_data.lambda_interval.high, distance
+        1 / lambda_data.lambda0_interval.high,
+        lambda_data.lambda_interval.high,
+        distance,
     )
     return ConfidenceInterval(low=low, best=best, high=high)
 
@@ -140,7 +146,8 @@ def predict_distance_for_quops(
     without state preparation or measurement error.
 
     Args:
-        lambda0: Constant factor of the lambda fit.
+        lambda0: Legacy multiplicative amplitude, equal to ``1 / result.lambda0``
+            for a fitted ``LambdaData`` denominator.
         lambda_: Error suppression factor.
         num_quops: Number of desired QuOps; must be at least 2.
         max_distance: Maximum distance to consider. Defaults to 999.

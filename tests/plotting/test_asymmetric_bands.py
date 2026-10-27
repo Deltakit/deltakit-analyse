@@ -150,7 +150,7 @@ class TestAsymmetricFitPipeline:
         quops = predict_quops_interval(result, 11)
         assert quops.low <= quops.best <= quops.high
         assert quops.best == pytest.approx(
-            predict_quops_at_distance(result.lambda0, result.lambda_, 11)
+            predict_quops_at_distance(1 / result.lambda0, result.lambda_, 11)
         )
 
     def test_quops_interval_requires_asymmetric_bounds(self):

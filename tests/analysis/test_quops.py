@@ -4,11 +4,15 @@ from __future__ import annotations
 from math import exp, log
 from typing import NamedTuple
 
+import numpy as np
 import pytest
 
 from deltakit_analyse import (
+    ConfidenceInterval,
+    LambdaData,
     predict_distance_for_quops,
     predict_quops_at_distance,
+    predict_quops_interval,
 )
 
 
@@ -96,3 +100,27 @@ def test_predict_qoups_by_distance_constants(lambda0, lambda_, distance, quops):
 def test_predict_distance_for_qoups_constants(lambda0, lambda_, distance, quops):
     dist = predict_distance_for_quops(lambda0, lambda_, quops)
     assert pytest.approx(dist, rel=1e-4) == distance
+
+
+def test_quops_interval_uses_fitted_denominator_prefactor():
+    fit = LambdaData(
+        lambda_=3.0,
+        lambda_std=0.1,
+        lambda0=2.0,
+        lambda0_std=0.1,
+        distances=np.array([3, 5, 7]),
+        leppr=np.array([1 / 18, 1 / 54, 1 / 162]),
+        leppr_std=np.full(3, 0.001),
+        lambda_interval=ConfidenceInterval(2.8, 3.0, 3.2),
+        lambda0_interval=ConfidenceInterval(1.8, 2.0, 2.2),
+    )
+    distance = 5
+    result = predict_quops_interval(fit, distance)
+    for actual, suppression, denominator in (
+        (result.low, 2.8, 1.8),
+        (result.best, 3.0, 2.0),
+        (result.high, 3.2, 2.2),
+    ):
+        per_round = suppression ** (-(distance + 1) / 2) / denominator
+        expected = 2 / (1 - (1 - 2 * per_round) ** distance)
+        assert actual == pytest.approx(expected)
