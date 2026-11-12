@@ -6,7 +6,7 @@
 
 ## Introduction
 
-`deltakit-analyse` helps analysing quantum error correction (QEC) experiments by providing tools to post-process data from simulations or quantum hardware execution and visualise the results. It is one of the component packages of
+`deltakit-analyse` helps analyse quantum error correction (QEC) experiments by providing tools to post-process data from simulations or quantum hardware execution and visualise the results. It is one of the component packages of
 [Deltakit](https://github.com/Deltakit/deltakit).
 
 ## Install
@@ -61,7 +61,7 @@ Example output:
 Logical error probability per round: 11.91% ± 0.31%
 ```
 
-with the following plot generate:
+with the following plot generated:
 
 ![Example logical error probability per round plot](docs/ler_example.png)
 
