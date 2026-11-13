@@ -1,4 +1,4 @@
-# deltakit-analyse
+# Deltakit-analyse
 
 [![PyPI](https://img.shields.io/pypi/v/deltakit-analyse.svg)](https://pypi.org/project/deltakit-analyse/)
 [![Python versions](https://img.shields.io/pypi/pyversions/deltakit-analyse)](https://pypi.org/project/deltakit-analyse/)
@@ -6,14 +6,16 @@
 
 ## Introduction
 
-`deltakit-analyse` helps analyse quantum error correction (QEC) experiments by providing tools to post-process data from simulations or quantum hardware execution and visualise the results. It is one of the component packages of
-[Deltakit](https://github.com/Deltakit/deltakit).
+`deltakit-analyse` helps analyse quantum error correction (QEC) experiments by providing tools to post-process data from simulations or real quantum hardware execution and visualise the results. 
+
+> [!NOTE]  
+> `deltakit-analyse` is part of [Deltakit](https://github.com/Deltakit/deltakit), [Riverlane](https://www.riverlane.com)'s open-source quantum error correction SDK.  
 
 ## Install
 
 The `deltakit-analyse` package requires a Python version between `3.11` and `3.15`.
 
-You can install with `pip`:
+You can install is as a stand-alone package with `pip`:
 
 ```bash
 python -m pip install deltakit-analyse
@@ -24,9 +26,11 @@ If you use `uv`, you can install it in your current virtual environment with:
 uv pip install deltakit-analyse
 ```
 
+Alternatively, it is distributed with Deltakit together with other companion packages (`pip install deltakit`).  
+
 ## Quick Start
 
-Estimate the logical error probability per round (often called logical error rate and abbreviated LER) from logical failure data.
+Below is an example of how `deltakit-analyse` can be used. Given logical failure data from a QEC experiment, the goal is to estimate the logical error probability per round, often called logical error rate (LER).  
 
 ```python
 import matplotlib.pyplot as plt
