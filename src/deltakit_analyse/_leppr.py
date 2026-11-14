@@ -12,6 +12,7 @@ from uncertainties.umath import exp as uexp  # type: ignore[attr-defined]
 
 from deltakit_analyse._binomial_fit import (
     DEFAULT_MAX_LIKELIHOOD_FACTOR,
+    _as_integer_array,
     fit_binomial_batch,
     fit_leppr_and_spam,
 )
@@ -510,10 +511,17 @@ def fit_logical_error_per_round_asymmetric(
 
     Returns:
         The fit results, with the asymmetric bounds populated.
+
+    Raises:
+        ValueError: If the count inputs do not have matching one-dimensional
+            shapes or contain non-integer counts.
     """
     rounds = np.asarray(num_rounds)
-    fails = np.asarray(num_fails)
-    shots = np.asarray(num_shots)
+    fails = _as_integer_array(num_fails, "num_fails")
+    shots = _as_integer_array(num_shots, "num_shots")
+    if rounds.ndim != 1 or rounds.shape != fails.shape or fails.shape != shots.shape:
+        msg = "num_rounds, num_fails and num_shots must have the same length."
+        raise ValueError(msg)
     order = np.argsort(rounds)
     rounds, fails, shots = rounds[order], fails[order], shots[order]
 
@@ -556,7 +564,8 @@ def calculate_lep_and_lep_stddev(
         mismatched lengths still raise.
 
     Raises:
-        ValueError: When inputs do not match lengths or have non-positive entries.
+        ValueError: When inputs do not match shapes, contain non-integer counts,
+            have non-positive entries, or contain more failures than shots.
 
     Examples:
         Calculating logical error probability and standard deviation
@@ -577,9 +586,9 @@ def calculate_lep_and_lep_stddev(
 
     """
     scalar_inputs = np.ndim(fails) == 0 and np.ndim(shots) == 0
-    fails = np.atleast_1d(np.asarray(fails))
-    shots = np.atleast_1d(np.asarray(shots))
-    if len(fails) != len(shots):
+    fails = np.atleast_1d(_as_integer_array(fails, "fails"))
+    shots = np.atleast_1d(_as_integer_array(shots, "shots"))
+    if fails.shape != shots.shape:
         msg = "Input data do not match lengths."
         raise ValueError(msg)
     if np.any(fails <= 0) or np.any(shots <= 0):
@@ -587,6 +596,9 @@ def calculate_lep_and_lep_stddev(
             "Both `fail` and `shots` must be strictly positive entries to calculate "
             "the logical error probability."
         )
+        raise ValueError(msg)
+    if np.any(fails > shots):
+        msg = "`fails` must not exceed `shots`."
         raise ValueError(msg)
     # Wald approximation for binomial LEP; asymmetric intervals are tracked separately
     # (see issue #134).
@@ -621,7 +633,8 @@ def calculate_lep_asymmetric(
         the maximum-likelihood estimate and the upper bound.
 
     Raises:
-        ValueError: When inputs do not match lengths or contain negative entries.
+        ValueError: When inputs do not match shapes, contain non-integer counts,
+            have non-positive shot counts, or contain more failures than shots.
 
     Examples:
         >>> low, lep, high = analysis.calculate_lep_asymmetric(
@@ -629,13 +642,16 @@ def calculate_lep_asymmetric(
         ...     shots=[500000] * 3,
         ... )
     """
-    fails = np.atleast_1d(fails)
-    shots = np.atleast_1d(shots)
-    if len(fails) != len(shots):
+    fails = np.atleast_1d(_as_integer_array(fails, "fails"))
+    shots = np.atleast_1d(_as_integer_array(shots, "shots"))
+    if fails.shape != shots.shape:
         msg = "Input data do not match lengths."
         raise ValueError(msg)
     if np.any(fails < 0) or np.any(shots <= 0):
         msg = "`fails` must be non-negative and `shots` strictly positive."
+        raise ValueError(msg)
+    if np.any(fails > shots):
+        msg = "`fails` must not exceed `shots`."
         raise ValueError(msg)
     low, best, high = fit_binomial_batch(
         shots, fails, max_likelihood_factor=max_likelihood_factor

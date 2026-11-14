@@ -31,6 +31,57 @@ from scipy import optimize
 DEFAULT_MAX_LIKELIHOOD_FACTOR: float = 1000.0
 
 
+def _as_integer_array(values: npt.ArrayLike, name: str) -> npt.NDArray[np.int_]:
+    """Validate count values and return them as platform integers.
+
+    Integer-valued floats are accepted, but fractional, non-finite, non-numeric,
+    and out-of-range values raise ``ValueError``. The input shape is preserved.
+
+    Args:
+        values: Scalar or array-like count data.
+        name: Input name to include in validation errors.
+
+    Returns:
+        An integer array with the same shape as ``values``.
+    """
+    array = np.asarray(values)
+    if array.dtype.kind not in "iuf":
+        msg = f"{name} must contain finite integer values."
+        raise ValueError(msg)
+    if array.dtype.kind == "f" and (
+        not np.all(np.isfinite(array)) or not np.all(array == np.floor(array))
+    ):
+        msg = f"{name} must contain finite integer values."
+        raise ValueError(msg)
+
+    # Checking if the values provided fit in ``np.int_``. There is a slight complication
+    # on too_large because the largest value representable by an integer is 2**(n-1) - 1
+    # which is not a power of 2, and so might not be exactly representable using
+    # floating-point representation, but that bound is casted to a floating-point value
+    # to perform the comparison.
+    integer_limits = np.iinfo(np.int_)
+    too_small = bool(np.any(array < integer_limits.min))
+    if array.dtype.kind == "f":
+        if np.finfo(array.dtype).max <= integer_limits.max:
+            # Easy check, if the floating point type cannot represent values larger than
+            # the integer type, we know already that's fine.
+            too_large = False
+        else:
+            rounded_max = array.dtype.type(integer_limits.max)
+            upper_exclusive = array.dtype.type(integer_limits.max + 1)
+            # If max rounds to the exclusive bound, equality is out of range.
+            if rounded_max == upper_exclusive:
+                too_large = bool(np.any(array >= upper_exclusive))
+            else:
+                too_large = bool(np.any(array > rounded_max))
+    else:
+        too_large = bool(np.any(array > integer_limits.max))
+    if too_small or too_large:
+        msg = f"{name} must be representable as platform integers."
+        raise ValueError(msg)
+    return array.astype(np.int_, copy=False)
+
+
 @dataclasses.dataclass(frozen=True)
 class ConfidenceInterval:
     """A point estimate together with its lower and upper bounds.
@@ -109,8 +160,15 @@ def fit_binomial(
         bounds.
 
     Raises:
-        ValueError: If the inputs are out of range.
+        ValueError: If counts are not integers or are out of range.
     """
+    shots = _as_integer_array(num_shots, "num_shots")
+    hits = _as_integer_array(num_hits, "num_hits")
+    if shots.ndim != 0 or hits.ndim != 0:
+        msg = "num_shots and num_hits must be scalars."
+        raise ValueError(msg)
+    num_shots = int(shots.item())
+    num_hits = int(hits.item())
     if max_likelihood_factor < 1:
         msg = f"max_likelihood_factor={max_likelihood_factor} must be >= 1."
         raise ValueError(msg)
@@ -157,10 +215,11 @@ def fit_binomial_batch(
         Three arrays ``(low, best, high)`` with the same shape as the inputs.
 
     Raises:
-        ValueError: If ``num_shots`` and ``num_hits`` have different shapes.
+        ValueError: If counts are not integers, have different shapes, or are out
+            of range.
     """
-    shots = np.asarray(num_shots, dtype=np.int_)
-    hits = np.asarray(num_hits, dtype=np.int_)
+    shots = _as_integer_array(num_shots, "num_shots")
+    hits = _as_integer_array(num_hits, "num_hits")
     if shots.shape != hits.shape:
         msg = "num_shots and num_hits must have the same shape."
         raise ValueError(msg)
@@ -398,13 +457,17 @@ def fit_leppr_and_spam(
         ``(leppr_fit, spam_fit)`` as :class:`ConfidenceInterval` instances.
 
     Raises:
-        ValueError: If the inputs have different lengths.
+        ValueError: If counts are not integers, inputs do not have matching
+            one-dimensional shapes, or the counts are out of range.
     """
     rounds = np.asarray(num_rounds, dtype=np.float64)
-    fails = np.asarray(num_fails, dtype=np.int_)
-    shots = np.asarray(num_shots, dtype=np.int_)
-    if not len(rounds) == len(fails) == len(shots):
+    fails = _as_integer_array(num_fails, "num_fails")
+    shots = _as_integer_array(num_shots, "num_shots")
+    if rounds.ndim != 1 or rounds.shape != fails.shape or fails.shape != shots.shape:
         msg = "num_rounds, num_fails and num_shots must have the same length."
+        raise ValueError(msg)
+    if np.any(shots <= 0) or np.any(fails < 0) or np.any(fails > shots):
+        msg = "Need positive num_shots and 0 <= num_fails <= num_shots."
         raise ValueError(msg)
 
     lep = fails / shots

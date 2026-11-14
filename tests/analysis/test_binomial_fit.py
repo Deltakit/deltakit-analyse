@@ -82,6 +82,18 @@ class TestFitBinomial:
         with pytest.raises(ValueError, match=r"must be >= 1|Need 0 <= num_hits"):
             fit_binomial(num_shots=shots, num_hits=hits, max_likelihood_factor=factor)
 
+    @pytest.mark.parametrize(
+        ("shots", "hits"),
+        [(10, 1.9), (10.5, 1), (10, np.nan), (10, np.inf)],
+    )
+    def test_non_integer_counts_raise(self, shots: float, hits: float) -> None:
+        with pytest.raises(ValueError, match="finite integer values"):
+            fit_binomial(num_shots=shots, num_hits=hits)
+
+    def test_float_rounded_above_platform_integer_range_raises(self) -> None:
+        with pytest.raises(ValueError, match="representable as platform integers"):
+            fit_binomial(num_shots=np.float64(2**63), num_hits=0)
+
 
 class TestFitBinomialBatch:
     def test_shapes_and_values_match_scalar(self) -> None:
@@ -98,6 +110,16 @@ class TestFitBinomialBatch:
             ValueError, match=r"num_shots and num_hits must have the same shape\."
         ):
             fit_binomial_batch([1000, 2000], [3])
+
+    def test_fractional_counts_raise_before_integer_conversion(self) -> None:
+        with pytest.raises(ValueError, match="finite integer values"):
+            fit_binomial_batch([1000], [1.9])
+
+    def test_failures_above_shots_raise(self) -> None:
+        with pytest.raises(
+            ValueError, match=r"Need 0 <= num_hits \(11\) <= num_shots \(10\)"
+        ):
+            fit_binomial_batch([10], [11])
 
 
 class TestCalculateLepAsymmetric:
@@ -136,6 +158,12 @@ class TestCalculateLepAsymmetric:
         ):
             calculate_lep_asymmetric([-1], [1000])
 
+    def test_fractional_and_excessive_fails_raise(self) -> None:
+        with pytest.raises(ValueError, match="finite integer values"):
+            calculate_lep_asymmetric([1.9], [1000])
+        with pytest.raises(ValueError, match="must not exceed"):
+            calculate_lep_asymmetric([11], [10])
+
 
 class TestFitLepprAndSpam:
     def test_recovers_true_rate(self) -> None:
@@ -163,6 +191,18 @@ class TestFitLepprAndSpam:
             match=r"num_rounds, num_fails and num_shots must have the same length\.",
         ):
             fit_leppr_and_spam([2, 4], [1], [1000])
+
+    @pytest.mark.parametrize(
+        ("fails", "shots"),
+        [([1.9, 3], [1000, 1000]), ([11, 3], [10, 1000]), ([1, 3], [0, 1000])],
+    )
+    def test_invalid_counts_raise(
+        self, fails: list[float | int], shots: list[int]
+    ) -> None:
+        with pytest.raises(
+            ValueError, match="finite integer values|positive num_shots"
+        ):
+            fit_leppr_and_spam([2, 4], fails, shots)
 
     def test_fixed_spam_pins_spam_and_tightens_leppr(self) -> None:
         rounds, fails, shots = _model_counts(1e-6, 1e-7, [2, 6, 10, 14], 1_000_000)

@@ -8,6 +8,7 @@ import pytest
 from deltakit_analyse import (
     calculate_lep_and_lep_stddev,
     compute_logical_error_per_round,
+    fit_logical_error_per_round_asymmetric,
 )
 
 
@@ -209,6 +210,14 @@ class TestCalculateLep:
         np.testing.assert_allclose(lep_stddevs, true_lep_stddevs, atol=1e-8)
 
 
+class TestFitLogicalErrorPerRoundAsymmetric:
+    def test_invalid_counts_raise_before_sorting(self) -> None:
+        with pytest.raises(ValueError, match="finite integer values"):
+            fit_logical_error_per_round_asymmetric([2, 4], [1.9, 3], [1000, 1000])
+        with pytest.raises(ValueError, match="same length"):
+            fit_logical_error_per_round_asymmetric([2, 4], [1], [1000])
+
+
 class TestCalculateLepScalarInputs:
     """Scalar-input behaviour fixed by Deltakit/deltakit#340."""
 
@@ -262,6 +271,17 @@ class TestCalculateLepScalarInputs:
     def test_non_positive_scalar_raises(self) -> None:
         with pytest.raises(ValueError, match="must be strictly positive"):
             calculate_lep_and_lep_stddev(fails=0, shots=100000)
+
+    @pytest.mark.parametrize(
+        ("fails", "shots"),
+        [(1.9, 1000), (11, 10)],
+    )
+    def test_invalid_counts_raise(self, fails: float, shots: int) -> None:
+        with pytest.raises(
+            ValueError,
+            match="finite integer values|strictly positive|must not exceed",
+        ):
+            calculate_lep_and_lep_stddev(fails=fails, shots=shots)
 
 
 class TestComputeLeppScalarInputs:
