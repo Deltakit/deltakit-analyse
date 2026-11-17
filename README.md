@@ -1,42 +1,78 @@
 # Deltakit-analyse
 
-[![PyPI][pypi-badge]][pypi-link]
-[![Python versions][python-badge]][pypi-link]
-[![Typing][typing-badge]][typing-link]
-[![License: Apache 2.0][license-badge]][license-link]
-[![SemVer][semver-badge]][semver-link]
-[![SPEC 0][spec0-badge]][spec0-link]
-[![Issues][issues-badge]][issues-link]
-[![Discussions][discussions-badge]][discussions-link]
+[![PyPI](https://img.shields.io/pypi/v/deltakit-analyse.svg)](https://pypi.org/project/deltakit-analyse/)
+[![Python versions](https://img.shields.io/pypi/pyversions/deltakit-analyse)](https://pypi.org/project/deltakit-analyse/)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-[pypi-badge]: https://img.shields.io/pypi/v/deltakit.svg
-[pypi-link]: https://pypi.org/project/deltakit/
+## Introduction
 
-[python-badge]: https://img.shields.io/pypi/pyversions/deltakit
+`deltakit-analyse` helps analyse quantum error correction (QEC) experiments by providing tools to post-process data from simulations or real quantum hardware execution and visualise the results. 
 
-[typing-badge]: https://img.shields.io/pypi/types/deltakit
-[typing-link]: https://typing.python.org/
+> [!NOTE]  
+> `deltakit-analyse` is part of [Deltakit](https://github.com/Deltakit/deltakit), [Riverlane](https://www.riverlane.com)'s open-source quantum error correction SDK.  
 
-[license-badge]: https://img.shields.io/badge/License-Apache_2.0-blue.svg
-[license-link]: https://www.apache.org/licenses/LICENSE-2.0
+## Install
 
-[semver-badge]: https://img.shields.io/badge/semver-2.0.0-blue
-[semver-link]: https://semver.org/spec/v2.0.0.html
+The `deltakit-analyse` package requires a Python version between `3.11` and `3.15`.
 
-[spec0-badge]: https://img.shields.io/badge/SPEC-0-forestgreen
-[spec0-link]: https://scientific-python.org/specs/spec-0000/
+You can install is as a stand-alone package with `pip`:
 
-[issues-badge]: https://img.shields.io/github/issues/Deltakit/deltakit?logo=github
-[issues-link]: https://github.com/deltakit/deltakit-analyse/issues
+```bash
+python -m pip install deltakit-analyse
+```
 
-[discussions-badge]: https://img.shields.io/badge/discussions-join-blue?logo=github
-[discussions-link]: https://github.com/deltakit/deltakit-analyse/discussions
+If you use `uv`, you can install it in your current virtual environment with:
+```bash
+uv pip install deltakit-analyse
+```
 
-deltakit allows you to create and run quantum error correction (QEC) experiments with features
-including circuit generation, simulation, decoding and results analysis.
+Alternatively, it is distributed with Deltakit together with other companion packages (`pip install deltakit`).  
 
-Whether you're a seasoned QEC researcher or just starting out, deltakit supports you
-in exploring new ways to implement QEC logic all the way to running complex
-QEC circuits on QPU hardware.
+## Quick Start
 
-This package, `deltakit-analyse`, is a component package of `deltakit`; please see [deltakit](https://github.com/deltakit/deltakit) for more information.
+Below is an example of how `deltakit-analyse` can be used. Given logical failure data from a QEC experiment, the goal is to estimate the logical error probability per round, often called logical error rate (LER).  
+
+```python
+import matplotlib.pyplot as plt
+
+from deltakit_analyse import (
+    calculate_lep_and_lep_stddev,
+    compute_logical_error_per_round,
+)
+from deltakit_analyse.plotting import interpolate_leppr, plot_leppr
+
+# Synthetic data for the example, replace this with results obtained from
+# simulations or real hardware execution.
+failed_shots = [9949, 8434, 9649, 9926]
+total_shots = [50_000, 20_000, 20_000, 20_000]
+rounds = [5, 10, 15, 20]
+
+# LER computation requires to compute the logical error probability (LEP) first.
+lep, lep_stddev = calculate_lep_and_lep_stddev(failed_shots, total_shots)
+estimate = compute_logical_error_per_round(rounds, lep, lep_stddev)
+
+print(
+    f"Logical error probability per round: {estimate.leppr:.2%} ± {estimate.leppr_stddev:.2%}"
+)
+
+fig, _ = plot_leppr(interpolate_leppr(estimate))
+plt.show()
+```
+
+Example output:
+
+```text
+Logical error probability per round: 11.91% ± 0.31%
+```
+
+with the following plot generated:
+
+![Example logical error probability per round plot](docs/ler_example.png)
+
+## Contributing
+
+See the [Deltakit contributing guide](https://github.com/Deltakit/deltakit/#contributing).
+
+## License
+
+This project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
