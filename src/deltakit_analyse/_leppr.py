@@ -12,11 +12,11 @@ from uncertainties.umath import exp as uexp  # type: ignore[attr-defined]
 
 from deltakit_analyse._binomial_fit import (
     DEFAULT_MAX_LIKELIHOOD_FACTOR,
-    _as_integer_array,
     fit_binomial_batch,
     fit_leppr_and_spam,
 )
 from deltakit_analyse._estimate import Estimate
+from deltakit_analyse._utils import _as_integer_array
 
 
 def leppr_from_single_point(lep: float, lep_stddev: float, rounds: int) -> Estimate:
