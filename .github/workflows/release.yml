@@ -30,7 +30,7 @@ jobs:
             | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
             | sort -V \
             | tail -n1)
-          version=$(echo "$latest_tag" | sed 's/^v//')
+          version=$(echo "${latest_tag:-v0.0.1}" | sed 's/^v//')
           uv run --no-sync python3 -m tools.check_version_match $version
 
   build-wheels:
