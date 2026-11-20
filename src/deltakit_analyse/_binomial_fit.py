@@ -34,12 +34,16 @@ DEFAULT_MAX_LIKELIHOOD_FACTOR: float = 1000.0
 def _as_integer_array(values: npt.ArrayLike, name: str) -> npt.NDArray[np.int_]:
     """Validate count values and return them as platform integers.
 
-    Integer-valued floats are accepted, but fractional, non-finite, non-numeric,
-    and out-of-range values raise ``ValueError``. The input shape is preserved.
+    Integer-valued floats are accepted, but fractional, non-finite, non-numeric, and
+    out-of-range values raise ``ValueError``. The input shape is preserved.
 
     Args:
         values: Scalar or array-like count data.
         name: Input name to include in validation errors.
+
+    Raises:
+        ValueError: if at least one entry in ``values`` cannot be safely interpreted as
+            an integer (e.g., a floating point value).
 
     Returns:
         An integer array with the same shape as ``values``.
