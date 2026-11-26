@@ -307,6 +307,11 @@ def get_lambda_gradient(
         x = sweep_noise_parameters[npi, column_indices]
         y = lambda_reciprocals[0, column_indices]
         stddevs = lambda_reciprocal_stddevs[0, column_indices]
+        # Keep only the first occurrence of each noise parameter value.
+        unique_column_indices = np.sort(np.unique(x, return_index=True)[1])
+        x = x[unique_column_indices]
+        y = y[unique_column_indices]
+        stddevs = stddevs[unique_column_indices]
         derivative, derivative_stddev = _approximate_derivative_at_point_from_values(
             x,
             y,
