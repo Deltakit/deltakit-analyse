@@ -3,11 +3,14 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
 import pytest
 
+from deltakit_analyse.error_budget import FittingParameters
 from deltakit_analyse.error_budget._gradient import (
     _approximate_derivative_at_point_from_values,
     _variate_ith_parameter_by,
+    get_lambda_gradient,
 )
 
 
@@ -67,9 +70,80 @@ def test_approximate_derivative_at_point_from_values(
     y = func(x)
     gradient_approximation_point = 0.5
     stddevs = 1e-10 + np.zeros_like(x)
-
     derivative, stddev = _approximate_derivative_at_point_from_values(
         x, y, stddevs, gradient_approximation_point, degree
     )
     assert pytest.approx(expected_derivative) == derivative
     assert pytest.approx(0, abs=1e-7) == stddev
+
+
+def _create_synthetic_report(
+    sweep: npt.NDArray[np.floating],
+    rounds_by_distance: dict[int, list[int]],
+) -> pd.DataFrame:
+    rng = np.random.default_rng(0)
+    shots = 200_000
+    rows: list[dict[str, int | float]] = []
+    for noise_parameter in sweep[0]:
+        for distance, round_values in rounds_by_distance.items():
+            p_round = 0.01 * (noise_parameter / 0.02) ** ((distance + 1) / 4)
+            for num_rounds in round_values:
+                lep = 0.5 * (1 - (1 - 2 * p_round) ** num_rounds)
+                rows.append(
+                    {
+                        "noise_p": noise_parameter,
+                        "distance": distance,
+                        "num_rounds": num_rounds,
+                        "shots": shots,
+                        "fails": int(rng.binomial(shots, lep)),
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
+@pytest.mark.filterwarnings(
+    "ignore:The maximum estimated logical error probability:UserWarning"
+)
+def test_get_lambda_gradient_with_repeated_noise_parameters() -> None:
+    central = np.array([2.5e-3])
+    sweep_with_repeats = np.array([[2.5e-3, 1e-3, 1e-3, 6e-3, 6e-3, 15.7e-3, 19.6e-3]])
+    sweep_without_repeats = np.array([[2.5e-3, 1e-3, 6e-3, 15.7e-3, 19.6e-3]])
+    sweep_with_repeats_different_order = np.array(
+        [[2.5e-3, 6e-3, 1e-3, 19.6e-3, 1e-3, 15.7e-3, 6e-3]]
+    )
+    rounds_by_distance = {5: [8, 16], 7: [8, 16], 9: [8, 16]}
+    report = _create_synthetic_report(sweep_with_repeats, rounds_by_distance)
+
+    gradient_with_repeats, stddev_with_repeats = get_lambda_gradient(
+        report,
+        central,
+        sweep_with_repeats,
+        ["p"],
+        rounds_by_distance,
+        FittingParameters(num_points_per_parameters=6),
+    )
+    gradient_without_repeats, stddev_without_repeats = get_lambda_gradient(
+        report,
+        central,
+        sweep_without_repeats,
+        ["p"],
+        rounds_by_distance,
+        FittingParameters(num_points_per_parameters=4),
+    )
+    gradient_with_repeats_different_order, stddev_with_repeats_different_order = (
+        get_lambda_gradient(
+            report,
+            central,
+            sweep_with_repeats_different_order,
+            ["p"],
+            rounds_by_distance,
+            FittingParameters(num_points_per_parameters=6),
+        )
+    )
+
+    np.testing.assert_allclose(gradient_with_repeats, gradient_without_repeats)
+    np.testing.assert_allclose(stddev_with_repeats, stddev_without_repeats)
+    np.testing.assert_allclose(
+        gradient_with_repeats, gradient_with_repeats_different_order
+    )
+    np.testing.assert_allclose(stddev_with_repeats, stddev_with_repeats_different_order)
