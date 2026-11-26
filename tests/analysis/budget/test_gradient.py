@@ -111,7 +111,7 @@ def test_get_lambda_gradient_with_repeated_noise_parameters() -> None:
     sweep_with_repeats_different_order = np.array(
         [[2.5e-3, 6e-3, 1e-3, 19.6e-3, 1e-3, 15.7e-3, 6e-3]]
     )
-    rounds_by_distance = {3: [8, 16], 5: [8, 16], 7: [8, 16]}
+    rounds_by_distance = {5: [8, 16], 7: [8, 16], 9: [8, 16]}
     report = _create_synthetic_report(sweep_with_repeats, rounds_by_distance)
 
     gradient_with_repeats, stddev_with_repeats = get_lambda_gradient(
